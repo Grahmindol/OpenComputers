@@ -1,0 +1,9 @@
+{
+  "asset_name": "netherite_silicon",
+  "description": {
+    "color": "#3B3B3B",
+    "translate": "trim_material.opencomputers.netherite_silicon"
+  },
+  "ingredient": "opencomputers:netheritesilicon",
+  "item_model_index": 0.8
+}

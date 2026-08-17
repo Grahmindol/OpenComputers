@@ -19,6 +19,7 @@ object Slot {
   val Tablet = driver.item.Slot.Tablet
   val Tool = "tool"
   val Upgrade = driver.item.Slot.Upgrade
+  val Trim = driver.item.Slot.Trim
 
-  val All = Array(Card, ComponentBus, Container, CPU, EEPROM, Floppy, HDD, Memory, RackMountable, Tablet, Tool, Upgrade)
+  val All = Array(Card, ComponentBus, Container, CPU, EEPROM, Floppy, HDD, Memory, RackMountable, Tablet, Tool, Upgrade, Trim)
 }

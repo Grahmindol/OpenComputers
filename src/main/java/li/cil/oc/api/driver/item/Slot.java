@@ -17,6 +17,7 @@ public final class Slot {
     public static final String RackMountable = "rack_mountable";
     public static final String Tablet = "tablet";
     public static final String Upgrade = "upgrade";
+    public static final String Trim = "trim";
 
     private Slot() {
     }

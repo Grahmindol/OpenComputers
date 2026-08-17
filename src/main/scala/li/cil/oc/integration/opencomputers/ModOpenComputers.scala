@@ -62,6 +62,7 @@ object ModOpenComputers extends ModProxy {
     RobotTemplate.register()
     ServerTemplate.register()
     TabletTemplate.register()
+    ArmorTemplate.register()
     TemplateBlacklist.register()
 
     api.IMC.registerWrenchTool("li.cil.oc.integration.opencomputers.ModOpenComputers.useWrench")
@@ -212,6 +213,8 @@ object ModOpenComputers extends ModProxy {
 
     api.Driver.add(InventoryProviderDatabase)
     api.Driver.add(InventoryProviderServer)
+
+    api.Driver.add(DriverTrim)
 
     blacklistHost(classOf[internal.Adapter],
       Constants.BlockName.Geolyzer,
