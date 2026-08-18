@@ -37,7 +37,7 @@ object ArmorTemplate extends Template {
       exists(name => hasComponent(name)(inventory))),
     "OS" -> hasFileSystem _)
 
-  override protected def hostClass = classOf[internal.Tablet]
+  override protected def hostClass = classOf[internal.Robot]
 
   def selectHelmet(stack: ItemStack) = stack.is(net.minecraft.world.item.Items.NETHERITE_HELMET)
   def selectChestplate(stack: ItemStack) = stack.is(net.minecraft.world.item.Items.NETHERITE_CHESTPLATE)
@@ -85,7 +85,6 @@ object ArmorTemplate extends Template {
 
     stack.set(OCComponents.CONTENTS, items.map(ImmutableItemStack.copyOf).toList)
 
-    //PalettedPermutations
     val optional = TrimPatterns.getFromTemplate(registries, inventory.getItem(13));
     val optional1 = registries.lookupOrThrow(Registries.TRIM_MATERIAL).get(TrimMaterials.REDSTONE)
     if (optional.isPresent && optional1.isPresent) stack.set(DataComponents.TRIM, new ArmorTrim(optional1.get, optional.get))
@@ -199,6 +198,7 @@ object ArmorTemplate extends Template {
 
   override protected def maxComplexity(inventory: Container) = super.maxComplexity(inventory) / 2 + 5
 
-  override protected def caseTier(inventory: Container) = ItemUtils.caseTier(inventory.getItem(0))
+  // max complexity !!!!
+  override protected def caseTier(inventory: Container) = Tier.Four
 }
 

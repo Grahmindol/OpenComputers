@@ -10,7 +10,8 @@ import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.Connector
 import li.cil.oc.common.Advancement
 import li.cil.oc.common.PacketType
-import li.cil.oc.common.component.{RackKVM => RackKVMComponent, RemoteTerminalHost, TextBuffer}
+import li.cil.oc.common.armor.ArmorManager
+import li.cil.oc.common.component.{RemoteTerminalHost, TextBuffer, RackKVM => RackKVMComponent}
 import li.cil.oc.common.menu
 import li.cil.oc.common.entity.Drone
 import li.cil.oc.common.entity.DroneInventory
@@ -80,7 +81,16 @@ object PacketHandler extends CommonPacketHandler {
       case PacketType.TextBufferInit => onTextBufferInit(p)
       case PacketType.WaypointLabel => onWaypointLabel(p)
       case PacketType.HoloScreenResize => onHoloScreenResize(p)
+      case PacketType.ArmorInteraction => onArmorInteraction(p)
       case _ => // Invalid packet.
+    }
+  }
+
+  def onArmorInteraction(p: PacketParser): Unit = {
+    ArmorManager.get(p.player) match {
+      case Some(wrapper) =>
+        wrapper.interact(p.player.level, p.player)
+      case None => // no armor
     }
   }
 

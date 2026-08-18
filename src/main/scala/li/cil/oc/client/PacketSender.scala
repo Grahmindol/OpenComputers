@@ -19,7 +19,7 @@ object PacketSender {
   // Timestamp after which the next clipboard message may be sent. Used to
   // avoid spamming large packets on key repeat.
   protected var clipboardCooldown = 0L
-  
+
   def sendComputerPower(computer: menu.Case, power: Boolean): Unit = {
     val pb = new SimplePacketBuilder(PacketType.ComputerPower)
 
@@ -264,6 +264,12 @@ object PacketSender {
 
     pb.writeTileEntity(screen)
     pb.writeDirection(Option(side))
+
+    pb.sendToServer()
+  }
+
+  def sendArmorInteraction(): Unit = {
+    val pb = new SimplePacketBuilder(PacketType.ArmorInteraction)
 
     pb.sendToServer()
   }
