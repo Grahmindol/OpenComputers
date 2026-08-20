@@ -1,7 +1,7 @@
 package li.cil.oc.client.gui
 
 import com.mojang.blaze3d.vertex.PoseStack
-import li.cil.oc.api
+import li.cil.oc.{OpenComputers, api}
 import li.cil.oc.client.renderer.TextBufferRenderCache
 import li.cil.oc.client.renderer.gui.BufferRenderer
 import net.minecraft.client.gui.{GuiGraphics, screens}
@@ -89,7 +89,7 @@ class Screen(initialBuffer: api.internal.TextBuffer, val hasMouse: Boolean, val 
         else buffer.mouseDown(bx, by, button, null)
         didClick = true
         mx = bx.toInt
-        my = (by*2).toInt 
+        my = (by*2).toInt
       case _ =>
     }
   }

@@ -18,14 +18,12 @@ import li.cil.oc.client.renderer.markdown.segment.render.BlockImageProvider
 import li.cil.oc.client.renderer.markdown.segment.render.ItemImageProvider
 import li.cil.oc.client.renderer.markdown.segment.render.TagImageProvider
 import li.cil.oc.client.renderer.markdown.segment.render.TextureImageProvider
-import li.cil.oc.common.EventHandler
-import li.cil.oc.common.Loot
-import li.cil.oc.common.SaveHandler
+import li.cil.oc.common.armor.ArmorWrapper
+import li.cil.oc.common.{EventHandler, ItemStateManager, Loot, SaveHandler}
 import li.cil.oc.common.block.SimpleBlock
 import li.cil.oc.common.event._
-import li.cil.oc.common.item.Analyzer
-import li.cil.oc.common.item.RedstoneCard
-import li.cil.oc.common.item.Tablet
+import li.cil.oc.common.init.OCItems
+import li.cil.oc.common.item.{Analyzer, RedstoneCard, Tablet, TabletWrapper}
 import li.cil.oc.common.item.data.ItemData
 import li.cil.oc.common.nanomachines.provider.DisintegrationProvider
 import li.cil.oc.common.nanomachines.provider.HungryProvider
@@ -98,7 +96,6 @@ object ModOpenComputers extends ModProxy {
 
     NeoForge.EVENT_BUS.register(EventHandler)
     NeoForge.EVENT_BUS.register(NanomachinesHandler.Common)
-    NeoForge.EVENT_BUS.register(Tablet)
     NeoForge.EVENT_BUS.register(Analyzer)
     NeoForge.EVENT_BUS.register(AngelUpgradeHandler)
     NeoForge.EVENT_BUS.register(ChunkloaderUpgradeHandler)
@@ -327,6 +324,12 @@ object ModOpenComputers extends ModProxy {
     api.Nanomachines.addProvider(ParticleProvider)
     api.Nanomachines.addProvider(PotionProvider)
     api.Nanomachines.addProvider(MagnetProvider)
+
+
+    NeoForge.EVENT_BUS.register(ItemStateManager)
+    ItemStateManager.register(OCItems.Tablet.get(), (s,p) => new TabletWrapper(s,p))
+    ItemStateManager.register(net.minecraft.world.item.Items.NETHERITE_CHESTPLATE, (_, p) => new ArmorWrapper(p))
+
 
     if(FMLEnvironment.dist.isClient) {
       initializeClient()

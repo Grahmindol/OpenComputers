@@ -187,12 +187,12 @@ public final class MenuTypes {
         });
     }
 
-    public static void openTabletGui(ServerPlayer player, li.cil.oc.common.item.TabletWrapper tablet) {
-        player.openMenu(tablet, buff -> {
-            ItemStack.STREAM_CODEC.encode(buff, tablet.stack());
-            buff.writeVarInt(tablet.getContainerSize());
-            buff.writeUtf(tablet.containerSlotType(), 32);
-            buff.writeVarInt(tablet.containerSlotTier());
+    public static void openTabletGui(ServerPlayer player, li.cil.oc.common.ItemStateWrapper wrapper) {
+        player.openMenu(wrapper, buff -> {
+            ItemStack.STREAM_CODEC.encode(buff, wrapper.stack());
+            buff.writeVarInt(wrapper.getContainerSize());
+            buff.writeUtf(wrapper.containerSlotType(), 32);
+            buff.writeVarInt(wrapper.containerSlotTier());
         });
     }
 

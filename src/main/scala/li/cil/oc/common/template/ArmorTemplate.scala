@@ -1,32 +1,27 @@
 package li.cil.oc.common.template
 
-import li.cil.oc.{Constants, Localization, Settings, api}
+import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.{ImmutableItemStack, internal}
 import li.cil.oc.common.datacomponents.OCComponents
-import li.cil.oc.common.{Slot, Tier}
 import li.cil.oc.common.item.data.TabletData
-import li.cil.oc.common.template.TabletTemplate.{complexity, hasComponent, hasFileSystem, toPair, validateComputer}
-import li.cil.oc.util.ItemUtils
-import net.minecraft.client.Minecraft
-import net.minecraft.client.renderer.texture.atlas.sources.PalettedPermutations
+import li.cil.oc.common.{Slot, Tier}
+import li.cil.oc.{Constants, Localization, Settings, api}
 import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.Registries
 import net.minecraft.network.chat.Component
-import net.minecraft.tags.ItemTags
 import net.minecraft.world.Container
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.armortrim.{ArmorTrim, TrimMaterial, TrimMaterials, TrimPattern, TrimPatterns}
+import net.minecraft.world.item.armortrim.{ArmorTrim, TrimMaterials, TrimPatterns}
 import net.neoforged.neoforge.server.ServerLifecycleHooks
 
-import java.util.Optional
-import scala.collection.JavaConverters.asJavaIterable
+import scala.annotation.unused
 import scala.collection.mutable
-import scala.jdk.OptionConverters.RichOptional
+import scala.jdk.CollectionConverters.IterableHasAsJava
 
 object ArmorTemplate extends Template {
   override protected val suggestedComponents = Array(
-    "BIOS" -> hasComponent(Constants.ItemName.EEPROM) _,
-    "Keyboard" -> hasComponent(Constants.BlockName.Keyboard) _,
+    "BIOS" -> hasComponent(Constants.ItemName.EEPROM),
+    "Keyboard" -> hasComponent(Constants.BlockName.Keyboard),
     "GraphicsCard" -> ((inventory: Container) => Array(
       Constants.ItemName.APUCreative,
       Constants.ItemName.APUTier1,
@@ -35,17 +30,21 @@ object ArmorTemplate extends Template {
       Constants.ItemName.GraphicsCardTier2,
       Constants.ItemName.GraphicsCardTier3).
       exists(name => hasComponent(name)(inventory))),
-    "OS" -> hasFileSystem _)
+    "OS" -> hasFileSystem)
 
-  override protected def hostClass = classOf[internal.Robot]
+  override protected def hostClass: Class[_ <: EnvironmentHost] = classOf[internal.Robot]
 
-  def selectHelmet(stack: ItemStack) = stack.is(net.minecraft.world.item.Items.NETHERITE_HELMET)
-  def selectChestplate(stack: ItemStack) = stack.is(net.minecraft.world.item.Items.NETHERITE_CHESTPLATE)
-  def selectLeggings(stack: ItemStack) = stack.is(net.minecraft.world.item.Items.NETHERITE_LEGGINGS)
-  def selectBoots(stack: ItemStack) = stack.is(net.minecraft.world.item.Items.NETHERITE_BOOTS)
+  @unused
+  def selectHelmet(stack: ItemStack): Boolean = stack.is(net.minecraft.world.item.Items.NETHERITE_HELMET)
+  @unused
+  def selectChestplate(stack: ItemStack): Boolean = stack.is(net.minecraft.world.item.Items.NETHERITE_CHESTPLATE)
+  @unused
+  def selectLeggings(stack: ItemStack): Boolean = stack.is(net.minecraft.world.item.Items.NETHERITE_LEGGINGS)
+  @unused
+  def selectBoots(stack: ItemStack): Boolean = stack.is(net.minecraft.world.item.Items.NETHERITE_BOOTS)
 
 
-  protected def hasTrim(inventory: Container) = exists(inventory, api.Driver.driverFor(_, hostClass) match {
+  private def hasTrim(inventory: Container) = exists(inventory, api.Driver.driverFor(_, hostClass) match {
     case li.cil.oc.integration.opencomputers.DriverTrim => true
     case _ => false
   })
@@ -85,7 +84,7 @@ object ArmorTemplate extends Template {
 
     stack.set(OCComponents.CONTENTS, items.map(ImmutableItemStack.copyOf).toList)
 
-    val optional = TrimPatterns.getFromTemplate(registries, inventory.getItem(13));
+    val optional = TrimPatterns.getFromTemplate(registries, inventory.getItem(13))
     val optional1 = registries.lookupOrThrow(Registries.TRIM_MATERIAL).get(TrimMaterials.REDSTONE)
     if (optional.isPresent && optional1.isPresent) stack.set(DataComponents.TRIM, new ArmorTrim(optional1.get, optional.get))
 
@@ -95,9 +94,10 @@ object ArmorTemplate extends Template {
     Array(stack, Double.box(energy))
   }
 
-  def selectDisassembler(stack: ItemStack) = api.Items.get(stack) == api.Items.get(Constants.ItemName.Tablet)
+  @unused
+  def selectDisassembler(stack: ItemStack): Boolean = api.Items.get(stack) == api.Items.get(Constants.ItemName.Tablet)
 
-  def disassemble(stack: ItemStack, ingredients: Array[ItemStack]) = {
+  def disassemble(stack: ItemStack, @unused ingredients: Array[ItemStack]): Array[ItemStack] = {
     val info = new TabletData(stack)
     val itemName = Constants.ItemName.TabletCase(info.tier)
     (Array(api.Items.get(itemName).createItemStack(1), info.container) ++ info.items.filter(!_.isEmpty).drop(1) /* Screen */).filter(!_.isEmpty)
@@ -116,7 +116,7 @@ object ArmorTemplate extends Template {
         Tier.Two,
         Tier.One
       ),
-      asJavaIterable(Iterable(
+      Iterable(
         (Slot.Trim, Tier.Any),
         null,
         null,
@@ -125,7 +125,8 @@ object ArmorTemplate extends Template {
         null,
         null,
         null,
-      ).map(toPair)))
+      ).map(toPair).asJava
+    )
 
     api.IMC.registerAssemblerTemplate(
       "Chestplate Upgrade",
@@ -139,7 +140,7 @@ object ArmorTemplate extends Template {
         Tier.Two,
         Tier.One
       ),
-      asJavaIterable(Iterable(
+      Iterable(
         (Slot.Trim, Tier.Any),
         (Slot.Card, Tier.Two),
         null,
@@ -148,7 +149,8 @@ object ArmorTemplate extends Template {
         (Slot.Memory, Tier.Two),
         (Slot.EEPROM, Tier.Any),
         (Slot.HDD, Tier.Two)
-      ).map(toPair)))
+      ).map(toPair).asJava
+    )
 
     api.IMC.registerAssemblerTemplate(
       "Leggings Upgrade",
@@ -161,7 +163,7 @@ object ArmorTemplate extends Template {
         Tier.Two,
         Tier.One
       ),
-      asJavaIterable(Iterable(
+      Iterable(
         (Slot.Trim, Tier.Any),
         null,
         null,
@@ -170,7 +172,8 @@ object ArmorTemplate extends Template {
         null,
         null,
         null,
-      ).map(toPair)))
+      ).map(toPair).asJava
+    )
 
     api.IMC.registerAssemblerTemplate(
       "Boots Upgrade",
@@ -183,7 +186,7 @@ object ArmorTemplate extends Template {
         Tier.Two,
         Tier.One
       ),
-      asJavaIterable(Iterable(
+      Iterable(
         (Slot.Trim, Tier.Any),
         null,
         null,
@@ -192,13 +195,14 @@ object ArmorTemplate extends Template {
         null,
         null,
         null,
-      ).map(toPair)))
+      ).map(toPair).asJava
+    )
 
   }
 
-  override protected def maxComplexity(inventory: Container) = super.maxComplexity(inventory) / 2 + 5
+  override protected def maxComplexity(inventory: Container): Int = super.maxComplexity(inventory) / 2 + 5
 
   // max complexity !!!!
-  override protected def caseTier(inventory: Container) = Tier.Four
+  override protected def caseTier(inventory: Container): Int = Tier.Four
 }
 

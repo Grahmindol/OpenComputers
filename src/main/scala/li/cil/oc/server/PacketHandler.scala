@@ -8,11 +8,9 @@ import li.cil.oc.api
 import li.cil.oc.api.internal.Server
 import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.Connector
-import li.cil.oc.common.Advancement
-import li.cil.oc.common.PacketType
-import li.cil.oc.common.armor.ArmorManager
+import li.cil.oc.common.{Advancement, ItemStateManager, PacketType, menu, PacketHandler => CommonPacketHandler}
+import li.cil.oc.common.armor.{ArmorManager, ArmorWrapper}
 import li.cil.oc.common.component.{RemoteTerminalHost, TextBuffer, RackKVM => RackKVMComponent}
-import li.cil.oc.common.menu
 import li.cil.oc.common.entity.Drone
 import li.cil.oc.common.entity.DroneInventory
 import li.cil.oc.common.item.{Tablet, TabletWrapper}
@@ -21,7 +19,7 @@ import li.cil.oc.common.item.traits.FileSystemLike
 import li.cil.oc.common.blockentity._
 import li.cil.oc.common.blockentity.traits.Computer
 import li.cil.oc.common.datacomponents.CompoundStorage
-import li.cil.oc.common.{PacketHandler => CommonPacketHandler}
+import li.cil.oc.common.init.OCItems
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.Util
 import org.apache.logging.log4j.MarkerManager
@@ -417,7 +415,9 @@ object PacketHandler extends CommonPacketHandler {
   def onMachineItemStateRequest(p: PacketParser): Unit = p.player match {
     case player: ServerPlayer => {
       val stack = p.readItemStack()
-      PacketSender.sendMachineItemState(player, stack, Tablet.get(stack, p.player).machine.isRunning)
+
+      val wrapper = ItemStateManager.get(stack, p.player)
+      PacketSender.sendMachineItemState(player, stack, wrapper.machine.isRunning)
     }
     case _ => // ignore
   }

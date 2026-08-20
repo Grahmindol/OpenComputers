@@ -2,9 +2,10 @@ package li.cil.oc.client.renderer
 
 import com.mojang.blaze3d.vertex.{PoseStack, VertexConsumer}
 import com.mojang.math.Axis
+import li.cil.oc.common.ItemStateManager
 import li.cil.oc.{Constants, api}
 import li.cil.oc.common.component.{TextBuffer => ComponentTextBuffer}
-import li.cil.oc.common.item.Tablet
+import li.cil.oc.common.item.{Tablet, TabletWrapper}
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.util.Mth
@@ -26,15 +27,15 @@ object TabletRenderer {
     if (api.Items.get(event.getItemStack) != api.Items.get(Constants.ItemName.Tablet)) return
 
     val player = Minecraft.getInstance.player
-    val wrapper = Tablet.Client.get(event.getItemStack).orElse {
-      Option.when(player != null && Tablet.getId(event.getItemStack).nonEmpty) {
-        Tablet.Client.get(event.getItemStack, player)
+    val wrapper = ItemStateManager.Client.get(event.getItemStack).orElse {
+      Option.when(player != null && ItemStateManager.getId(event.getItemStack).nonEmpty) {
+        ItemStateManager.Client.get(event.getItemStack, player)
       }
     }
     val buffer = wrapper.flatMap(_.componentSlots.collectFirst {
       case Some(textBuffer: api.internal.TextBuffer) => textBuffer
     })
-    val powered = wrapper.exists(_.data.isRunning)
+    val powered = wrapper.exists(_.asInstanceOf[TabletWrapper].data.isRunning)
 
     // Never expose the baked icon's fake screen in-hand. Until the client
     // receives the authoritative buffer snapshot, render an empty tablet face;
