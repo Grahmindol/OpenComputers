@@ -8,7 +8,7 @@ import li.cil.oc.api
 import li.cil.oc.api.internal.Server
 import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.Connector
-import li.cil.oc.common.{Advancement, ItemStateManager, PacketType, menu, PacketHandler => CommonPacketHandler}
+import li.cil.oc.common.{Advancement, ItemStateManager, ItemStateWrapper, PacketType, menu, PacketHandler => CommonPacketHandler}
 import li.cil.oc.common.armor.{ArmorManager, ArmorWrapper}
 import li.cil.oc.common.component.{RemoteTerminalHost, TextBuffer, RackKVM => RackKVMComponent}
 import li.cil.oc.common.entity.Drone
@@ -79,17 +79,23 @@ object PacketHandler extends CommonPacketHandler {
       case PacketType.TextBufferInit => onTextBufferInit(p)
       case PacketType.WaypointLabel => onWaypointLabel(p)
       case PacketType.HoloScreenResize => onHoloScreenResize(p)
-      case PacketType.ArmorInteraction => onArmorInteraction(p)
+      case PacketType.ArmorInteractionRequest => onItemStateInteractionRequest(p)
       case _ => // Invalid packet.
     }
   }
 
-  def onArmorInteraction(p: PacketParser): Unit = {
-    ArmorManager.get(p.player) match {
-      case Some(wrapper) =>
-        wrapper.interact(p.player.level, p.player)
-      case None => // no armor
-    }
+  def onItemStateInteractionRequest(p: PacketParser): Unit = {
+    val player = p.player
+    val stack = p.readItemStack()
+
+    val wrapper =ItemStateManager.get(stack, player)
+    wrapper.interact(player.level, player)
+
+    PacketSender.sendItemStateInteractionResponse(
+      player.asInstanceOf[ServerPlayer],
+      stack,
+      wrapper.machine.isRunning
+    )
   }
 
   def onHoloScreenResize(p: PacketParser): Unit = {
@@ -124,7 +130,7 @@ object PacketHandler extends CommonPacketHandler {
         }
         case tablet: menu.Tablet if tablet.containerId == containerId =>
           tablet.otherInventory match {
-            case wrapper: TabletWrapper => trySetComputerPower(wrapper.machine, setPower, player)
+            case wrapper: ItemStateWrapper => trySetComputerPower(wrapper.machine, setPower, player)
             case _ => logForgedPacket(player)
           }
         case _ => logForgedPacket(player)

@@ -170,17 +170,7 @@ class Tablet(props: Properties) extends Item(props) with traits.SimpleItem with 
           }
         }
         else {
-          if (player.isSecondaryUseActive) {
-            if (!level.isClientSide) {
-              player match {
-                case srvPlr: ServerPlayer => MenuTypes.openTabletGui(srvPlr, ItemStateManager.get(stack, player))
-                case _ =>
-              }
-            }
-          }
-          else {
-            ItemStateManager.get(stack, player).interact(level, player)
-          }
+          if(level.isClientSide) client.PacketSender.sendItemStateInteraction(stack, level.registryAccess())
         }
       case _ =>
     }
@@ -198,8 +188,6 @@ class Tablet(props: Properties) extends Item(props) with traits.SimpleItem with 
 }
 
 class TabletWrapper(stack: ItemStack, player: Player) extends ItemStateWrapper(stack, player) {
-
-  val data = new TabletData()
   val internalComponent: TabletComponent = if (getEnvironmentLevel.isClientSide) null else new TabletComponent(this)
 
   // Allow T3 tablets to have 8-bit color since they use a T3 screen.
@@ -231,18 +219,6 @@ class TabletWrapper(stack: ItemStack, player: Player) extends ItemStateWrapper(s
   override def items: Array[ItemStack] = data.items
 
   override def host: TabletWrapper = this
-
-
-  // ----------------------------------------------------------------------- //
-
-  def facing: Direction =
-    RotationHelper.fromYaw(player.getYRot)
-
-  def toLocal(value: Direction): Direction =
-    RotationHelper.toLocal(Direction.NORTH, facing, value)
-
-  def toGlobal(value: Direction): Direction =
-    RotationHelper.toGlobal(Direction.NORTH, facing, value)
 
   // ----------------------------------------------------------------------- //
 
@@ -309,21 +285,6 @@ class TabletWrapper(stack: ItemStack, player: Player) extends ItemStateWrapper(s
   }
 
   override def onDataUpdate(level: Level,player: Player): Unit = {
-    data.isRunning = machine.isRunning
-    data.energy = internalComponent.node.globalBuffer()
-    data.maxEnergy = internalComponent.node.globalBufferSize()
-  }
-
-  // ----------------------------------------------------------------------- //
-
-  override def loadData(holder: DataComponentHolder): Unit = {
-    super.loadData(holder)
-    data.loadData(holder)
-  }
-
-  override def saveData(holder: MutableDataComponentHolder): Unit = {
-    super.saveData(holder)
-    data.saveData(holder)
   }
 }
 

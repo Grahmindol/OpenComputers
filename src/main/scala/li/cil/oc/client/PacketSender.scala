@@ -268,9 +268,9 @@ object PacketSender {
     pb.sendToServer()
   }
 
-  def sendArmorInteraction(): Unit = {
-    val pb = new SimplePacketBuilder(PacketType.ArmorInteraction)
-
+  def sendItemStateInteraction(stack: ItemStack, registryAccess: RegistryAccess): Unit = {
+    val pb = new SimplePacketBuilder(PacketType.ArmorInteractionRequest)
+    pb.writeItemStack(stack, registryAccess)
     pb.sendToServer()
   }
 }

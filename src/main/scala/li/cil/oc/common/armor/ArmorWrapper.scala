@@ -6,18 +6,15 @@ import li.cil.oc.api.driver.item.Container
 import li.cil.oc.common.{ItemStateWrapper, Slot, Tier}
 import li.cil.oc.integration.opencomputers.DriverScreen
 import li.cil.oc.server.component.{Armor => ArmorComponent}
-import net.minecraft.core.component.DataComponentHolder
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
-import net.neoforged.neoforge.common.MutableDataComponentHolder
 
 class ArmorWrapper(player: Player) extends ItemStateWrapper(player.getItemBySlot(EquipmentSlot.CHEST), player) {
 
   var checksum: String = ""
 
-  val data = new ArmorData(player)
   val internalComponent: ArmorComponent = if (getEnvironmentLevel.isClientSide) null else new ArmorComponent(this)
 
   // ----------------------------------------------------------------------- //
@@ -76,13 +73,6 @@ class ArmorWrapper(player: Player) extends ItemStateWrapper(player.getItemBySlot
 
   override def onInit(level: Level,player: Player): Unit = {
     OpenComputers.log.info(s"ArmorWrapper initialization")
-  }
-
-  override def onDataUpdate(level: Level,player: Player): Unit = {
-    data.isRunning = machine.isRunning
-    data.energy = internalComponent.node.globalBuffer()
-    data.maxEnergy = internalComponent.node.globalBufferSize()
-
     componentSlots collect {
       case Some(buffer: api.internal.TextBuffer) =>
         buffer.setMaximumColorDepth(api.internal.TextBuffer.ColorDepth.FourBit)
@@ -90,17 +80,12 @@ class ArmorWrapper(player: Player) extends ItemStateWrapper(player.getItemBySlot
     }
   }
 
+  override def onDataUpdate(level: Level,player: Player): Unit = {
+    data.isRunning = machine.isRunning
+    data.energy = internalComponent.node.globalBuffer()
+    data.maxEnergy = internalComponent.node.globalBufferSize()
 
-  // ----------------------------------------------------------------------- //
 
-  override def loadData(holder: DataComponentHolder): Unit = {
-    super.loadData(holder)
-    data.loadData(player)
-  }
-
-  override def saveData(holder: MutableDataComponentHolder): Unit = {
-    super.saveData(holder)
-    data.saveData(player)
   }
 
 }

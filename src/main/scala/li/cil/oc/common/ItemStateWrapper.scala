@@ -7,8 +7,12 @@ import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.client.gui
 import li.cil.oc.common.container.ComponentInventory
 import li.cil.oc._
+import li.cil.oc.common.item.data.TabletData
+import li.cil.oc.common.menu.MenuTypes
+import li.cil.oc.server.PacketSender
+import li.cil.oc.util.RotationHelper
 import net.minecraft.client.Minecraft
-import net.minecraft.core.HolderLookup
+import net.minecraft.core.{Direction, HolderLookup}
 import net.minecraft.core.component.DataComponentHolder
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.MenuProvider
@@ -19,12 +23,13 @@ import net.neoforged.neoforge.common.MutableDataComponentHolder
 
 import scala.jdk.CollectionConverters.IterableHasAsJava
 
-abstract class ItemStateWrapper(var stack: ItemStack, var player: Player ) extends ComponentInventory with MachineHost with MenuProvider {
+abstract class ItemStateWrapper(var stack: ItemStack, var player: Player ) extends ComponentInventory with MachineHost with MenuProvider with  api.internal.Tablet{
   // Remember our *original* level, so we know which tablets to clear on dimension
   // changes of players holding tablets - since the player entity instance may be
   // kept the same and components are not required to properly handle level changes.
   val getEnvironmentLevel: Level = player.level
 
+  val data = new TabletData()
   lazy val machine: api.machine.Machine = if (getEnvironmentLevel.isClientSide) null else Machine.create(this)
 
   def isCreative: Boolean
@@ -64,6 +69,17 @@ abstract class ItemStateWrapper(var stack: ItemStack, var player: Player ) exten
       machine.saveData(stack)
     }
   }
+
+  // ----------------------------------------------------------------------- //
+
+  def facing: Direction =
+    RotationHelper.fromYaw(player.getYRot)
+
+  def toLocal(value: Direction): Direction =
+    RotationHelper.toLocal(Direction.NORTH, facing, value)
+
+  def toGlobal(value: Direction): Direction =
+    RotationHelper.toGlobal(Direction.NORTH, facing, value)
 
 
 
@@ -185,23 +201,33 @@ abstract class ItemStateWrapper(var stack: ItemStack, var player: Player ) exten
   }
 
   def interact(level: Level, player: Player) = {
-    if (!level.isClientSide) {
-      OpenComputers.log.info("interaction !!! (server)")
-      machine.start()
-      machine.lastError match {
-        case message if message != null => player.sendSystemMessage(Localization.Analyzer.LastError(message))
-        case _ =>
+    if (player.isSecondaryUseActive) {
+      if (!level.isClientSide) {
+        player match {
+          case srvPlr: ServerPlayer => MenuTypes.openTabletGui(srvPlr, this)
+          case _ =>
+        }
       }
     }
     else {
-      OpenComputers.log.info("interaction !!! (client)")
-      componentSlots.collectFirst {
-        case Some(buffer: api.internal.TextBuffer) => buffer
-      } match {
-        case Some(buffer: api.internal.TextBuffer) =>
-          OpenComputers.log.info(buffer)
-          Minecraft.getInstance.pushGuiLayer(new gui.Screen(buffer, true, () => true, () => buffer.isRenderingEnabled))
-        case _ =>
+      if (!level.isClientSide) {
+        OpenComputers.log.info("interaction !!! (server)")
+        machine.start()
+        machine.lastError match {
+          case message if message != null => player.sendSystemMessage(Localization.Analyzer.LastError(message))
+          case _ =>
+        }
+      }
+      else {
+        OpenComputers.log.info("interaction !!! (client)")
+        componentSlots.collectFirst {
+          case Some(buffer: api.internal.TextBuffer) => buffer
+        } match {
+          case Some(buffer: api.internal.TextBuffer) =>
+            OpenComputers.log.info(buffer)
+            Minecraft.getInstance.pushGuiLayer(new gui.Screen(buffer, true, () => true, () => buffer.isRenderingEnabled))
+          case _ =>
+        }
       }
     }
   }
@@ -209,11 +235,12 @@ abstract class ItemStateWrapper(var stack: ItemStack, var player: Player ) exten
   // ----------------------------------------------------------------------- //
 
   override def loadData(holder: DataComponentHolder): Unit = {
-
+    data.loadData(holder)
   }
 
   override def saveData(holder: MutableDataComponentHolder): Unit = {
     saveComponents()
+    data.saveData(holder)
   }
 
   // ----------------------------------------------------------------------- //

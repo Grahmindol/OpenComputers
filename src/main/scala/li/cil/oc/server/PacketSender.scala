@@ -19,6 +19,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundSource
+import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.item.ItemStack
@@ -88,7 +89,7 @@ object PacketSender {
     pb.writeBoolean(loop)
     pb.sendToPlayersNearHost(host, Option(Settings.get.maxNetworkClientSoundPacketDistance))
   }
-  
+
   def sendAdapterState(t: blockentity.Adapter): Unit = {
     val pb = new SimplePacketBuilder(PacketType.AdapterState)
 
@@ -153,6 +154,15 @@ object PacketSender {
 
   def sendMachineItemState(player: ServerPlayer, stack: ItemStack, isRunning: Boolean): Unit = {
     val pb = new SimplePacketBuilder(PacketType.MachineItemStateResponse)
+
+    pb.writeItemStack(stack, player.server.registryAccess())
+    pb.writeBoolean(isRunning)
+
+    pb.sendToPlayer(player)
+  }
+
+  def sendItemStateInteractionResponse(player: ServerPlayer, stack: ItemStack, isRunning: Boolean): Unit = {
+    val pb = new SimplePacketBuilder(PacketType.ArmorInteractionResponse)
 
     pb.writeItemStack(stack, player.server.registryAccess())
     pb.writeBoolean(isRunning)

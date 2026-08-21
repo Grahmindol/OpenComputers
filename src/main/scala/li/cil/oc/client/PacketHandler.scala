@@ -22,7 +22,7 @@ import net.minecraft.core.Direction
 import net.minecraft.core.component.DataComponentMap
 import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.registries.Registries
-import net.minecraft.nbt.{NbtIo, NbtOps}
+import net.minecraft.nbt.{CompoundTag, NbtIo, NbtOps}
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.sounds.{SoundEvent, SoundSource}
@@ -72,6 +72,7 @@ object PacketHandler extends CommonPacketHandler {
       case PacketType.Clipboard => onClipboard(p)
       case PacketType.ColorChange => onColorChange(p)
       case PacketType.MachineItemStateResponse => onMachineItemStateResponse(p)
+      case PacketType.ArmorInteractionResponse => onArmorInteractionResponse(p)
       case PacketType.ComputerState => onComputerState(p)
       case PacketType.ComputerUserList => onComputerUserList(p)
       case PacketType.ContainerUpdate => onContainerUpdate(p)
@@ -259,6 +260,18 @@ object PacketHandler extends CommonPacketHandler {
         wrapper.isDirty = false
       case _ => // ignore
     }
+  }
+
+  def onArmorInteractionResponse(p: PacketParser) : Unit = {
+    // TODO : make separate event for armor and tablet.
+    val stack = p.readItemStack()
+    val running = p.readBoolean()
+
+    val wrapper = ItemStateManager.Client.get(stack, p.player)
+
+    wrapper.stack = stack
+    wrapper.player = p.player
+    wrapper.interact(p.player.level(), p.player)
   }
 
   def onComputerState(p: PacketParser): Unit =

@@ -104,7 +104,8 @@ object PacketType extends Enumeration {
   ServerPower,
   HoloScreenResize,
   RackKVMSelection,
-  ArmorInteraction,
+  ArmorInteractionRequest,
+  ArmorInteractionResponse,
 
   LootDisksReset,
   LootEEPROMsReset,
