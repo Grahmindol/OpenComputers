@@ -16,9 +16,9 @@ import net.minecraft.world.effect.MobEffects
 import net.neoforged.neoforge.common.extensions.IItemExtension
 
 class Acid(props: Properties) extends Item(props) with traits.SimpleItem with IItemExtension {
-  override def use(stack: ItemStack, level: Level, player: Player): InteractionResultHolder[ItemStack] = {
-    player.startUsingItem(if (player.getItemInHand(InteractionHand.MAIN_HAND) == stack) InteractionHand.MAIN_HAND else InteractionHand.OFF_HAND)
-    new InteractionResultHolder(InteractionResult.sidedSuccess(level.isClientSide), stack)
+  override def use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder[ItemStack] = {
+    player.startUsingItem(hand)
+    InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide)
   }
 
   override def getUseAnimation(stack: ItemStack): UseAnim = UseAnim.DRINK

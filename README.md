@@ -74,14 +74,7 @@ Useful project links:
 
 ## Contributing
 
-Bug fixes, focused ports, documentation improvements, translations, and small
-Lua programs are welcome. Please keep changes scoped, preserve compatibility
-where practical, and run `gradlew build` before opening a pull request.
-
-Translations live in
-[`src/main/resources/assets/opencomputers/lang`](src/main/resources/assets/opencomputers/lang).
-The English locale is the source of truth for keys. Instructions for adding
-loot-disk programs are in the [loot README](src/main/resources/assets/opencomputers/loot/README.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Using the API
 

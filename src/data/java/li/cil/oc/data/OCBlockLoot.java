@@ -149,7 +149,7 @@ class OCBlockLoot extends BlockLootSubProvider {
         add(block, LootTable.lootTable()
             .withPool(applyExplosionCondition(block, LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1.0F))
-                .add(LootItem.lootTableItem(block).apply(new CopyColor.Builder()))
+                .add(LootItem.lootTableItem(block).apply(CopyColor.copyColor()))
             ))
         );
     }

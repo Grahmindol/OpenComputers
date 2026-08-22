@@ -18,7 +18,7 @@ import net.minecraft.client.renderer.RenderType
 import net.neoforged.neoforge.client.model.data.ModelData
 import org.joml.Vector3f
 
-trait SmartBlockModelBase extends BakedModel {
+abstract class SmartBlockModelBase extends BakedModel {
   override def getOverrides: ItemOverrides = ItemOverrides.EMPTY
 
   override def getQuads(state: BlockState, side: Direction, rand: RandomSource): util.List[BakedQuad] =
@@ -98,21 +98,6 @@ trait SmartBlockModelBase extends BakedModel {
       math.max(minY, math.min(maxY, vertex.y)),
       math.max(minZ, math.min(maxZ, vertex.z)))))
   }
-
-  protected def rotateVector(v: Vec3, angle: Double, axis: Vec3) = {
-    def scale(v: Vec3, s: Double) = v.scale(s)
-    val cosAngle = math.cos(angle)
-    val sinAngle = math.sin(angle)
-    scale(v, cosAngle)
-      .add(scale(axis.cross(v), sinAngle))
-      .add(scale(axis, axis.dot(v) * (1 - cosAngle)))
-  }
-
-  protected def rotateFace(face: Array[Vec3], angle: Double, axis: Vec3, around: Vec3 = new Vec3(0.5, 0.5, 0.5)) =
-    face.map(v => rotateVector(v.subtract(around), angle, axis).add(around))
-
-  protected def rotateBox(box: Array[Array[Vec3]], angle: Double, axis: Vec3 = new Vec3(0, 1, 0), around: Vec3 = new Vec3(0.5, 0.5, 0.5)) =
-    box.map(face => rotateFace(face, angle, axis, around))
 
   protected def bakeQuads(box: Array[Array[Vec3]], texture: Array[TextureAtlasSprite], color: Option[Int]): Array[BakedQuad] =
     bakeQuads(box, texture, color.getOrElse(White))

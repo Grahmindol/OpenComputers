@@ -1,31 +1,23 @@
 package li.cil.oc.common.item
 
-import java.util.Random
-import li.cil.oc.Constants
-import li.cil.oc.OpenComputers
-import li.cil.oc.api
-import li.cil.oc.util.InventoryUtils
-import li.cil.oc.util.ItemUtils
-import net.minecraft.world.item.Item
-import net.minecraft.world.item.Item.Properties
-import net.minecraft.world.item.ItemStack
-import net.minecraft.world.item.crafting.RecipeManager
-
-import scala.collection.mutable
-import net.minecraft.world.item.CreativeModeTab
-import net.minecraft.core.NonNullList
-import net.minecraft.world.level.Level
+import li.cil.oc.{api, Constants, OpenComputers}
+import li.cil.oc.util.{InventoryUtils, ItemUtils}
+import net.minecraft.sounds.{SoundEvents, SoundSource}
+import net.minecraft.world.{InteractionHand, InteractionResultHolder}
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.InteractionResultHolder
-import net.minecraft.world.InteractionResult
-import net.minecraft.world.level.block.SoundType
-import net.minecraft.sounds.SoundSource
-import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.item.{Item, ItemStack}
+import net.minecraft.world.item.Item.Properties
+import net.minecraft.world.item.crafting.RecipeManager
+import net.minecraft.world.level.Level
 import net.neoforged.neoforge.common.extensions.IItemExtension
 
+import java.util.Random
+import scala.collection.mutable
+
 class Present(props: Properties) extends Item(props) with traits.SimpleItem with IItemExtension {
-  override def use(stack: ItemStack, level: Level, player: Player): InteractionResultHolder[ItemStack] = {
-    if (stack.getCount > 0) {
+  override def use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder[ItemStack] = {
+    val stack = player.getItemInHand(hand)
+    if (!stack.isEmpty) {
       stack.shrink(1)
       if (!level.isClientSide) {
         level.playSound(player, player.getX, player.getY, player.getZ, SoundEvents.PLAYER_LEVELUP, SoundSource.MASTER, 0.2f, 1f)
@@ -34,7 +26,7 @@ class Present(props: Properties) extends Item(props) with traits.SimpleItem with
         InventoryUtils.addToPlayerInventory(present, player)
       }
     }
-    new InteractionResultHolder(InteractionResult.sidedSuccess(level.isClientSide), stack)
+    InteractionResultHolder.sidedSuccess(stack, level.isClientSide)
   }
 }
 

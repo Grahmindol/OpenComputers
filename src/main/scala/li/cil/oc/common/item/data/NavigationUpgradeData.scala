@@ -1,23 +1,14 @@
 package li.cil.oc.common.item.data
 
 import li.cil.oc.Constants
-import li.cil.oc.Settings
 import li.cil.oc.api.ImmutableItemStack
 import li.cil.oc.common.datacomponents.OCComponents
-import li.cil.oc.util.ExtendedNBT._
-import li.cil.oc.util.ExtendedItemStack._
 import li.cil.oc.util.ExtendedDataComponentHolder._
-import li.cil.oc.util.ItemUtils
-import net.minecraft.core.HolderLookup
-import net.minecraft.core.component.{DataComponentHolder, DataComponents}
-import net.minecraft.world.item.{ItemStack, Items, MapItem}
+import net.minecraft.core.component.DataComponentHolder
+import net.minecraft.world.item.{Items, ItemStack, MapItem}
 import net.minecraft.world.level.Level
-import net.minecraft.nbt.CompoundTag
-import net.minecraft.nbt.NbtOps
-import net.minecraft.world.item.component.CustomData
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData
 import net.neoforged.neoforge.common.MutableDataComponentHolder
-import net.neoforged.neoforge.server.ServerLifecycleHooks
 
 class NavigationUpgradeData extends ItemData(Constants.ItemName.NavigationUpgrade) {
   def this(stack: DataComponentHolder) = {
@@ -45,7 +36,7 @@ class NavigationUpgradeData extends ItemData(Constants.ItemName.NavigationUpgrad
   }
 
   override def saveData(holder: MutableDataComponentHolder): Unit = {
-    if(map != null) {
+    if (map != null) {
       holder.setComponent(OCComponents.SOURCE_MAP_ITEM, ImmutableItemStack.copyOf(map))
     }
   }

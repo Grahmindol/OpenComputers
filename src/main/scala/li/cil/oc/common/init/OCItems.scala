@@ -429,7 +429,7 @@ object OCItems extends ItemAPI {
   val DiskDriveMountable: DeferredItem[item.DiskDriveMountable] = registerItem(new item.DiskDriveMountable(defaultProps.stacksTo(1)), Constants.ItemName.DiskDriveMountable)
 
   // 1.9
-  val RAMCreative: DeferredItem[Item] = registerBasicItem(Constants.ItemName.RAMCreative, defaultProps.rarity(Rarity.EPIC))
+  val RAMCreative: DeferredItem[Item] = registerItem(new item.BasicItem(defaultProps.rarity(Rarity.EPIC), "creativememory"), Constants.ItemName.RAMCreative)
   val CapacitorMountable: DeferredItem[Item] = registerBasicItem(Constants.ItemName.CapacitorMountable, defaultProps.stacksTo(1))
 
   // Card components.

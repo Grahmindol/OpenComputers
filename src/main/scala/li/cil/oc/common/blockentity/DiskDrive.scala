@@ -137,21 +137,4 @@ class DiskDrive(pos: BlockPos, state: BlockState)
       Sound.playDiskEject(this)
     }
   }
-
-  // ----------------------------------------------------------------------- //
-  // TileEntity
-
-  private final val DiskTag = Settings.namespace + "disk"
-
-  override def loadForClient(nbt: CompoundTag, provider: HolderLookup.Provider): Unit = {
-    super.loadForClient(nbt, provider)
-    if (nbt.contains(DiskTag)) {
-      setItem(0, ItemStack.parseOptional(provider, nbt.getCompound(DiskTag)))
-    }
-  }
-
-  override def saveForClient(nbt: CompoundTag, provider: HolderLookup.Provider): Unit = {
-    super.saveForClient(nbt, provider)
-    if (!items(0).isEmpty) nbt.setNewCompoundTag(DiskTag, _ => items(0).save(provider))
-  }
 }

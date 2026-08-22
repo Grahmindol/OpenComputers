@@ -4,12 +4,10 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import li.cil.oc.api.internal.Colored;
 import li.cil.oc.util.ItemColorizer;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -52,17 +50,5 @@ public final class CopyColor extends LootItemConditionalFunction {
             ItemColorizer.removeColor(stack);
         }
         return stack;
-    }
-
-    public static final class Builder extends LootItemConditionalFunction.Builder<Builder> {
-        @Override
-        public LootItemFunction build() {
-            return new CopyColor(getConditions());
-        }
-
-        @Override
-        protected Builder getThis() {
-            return this;
-        }
     }
 }

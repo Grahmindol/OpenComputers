@@ -45,7 +45,8 @@ class TrainRobotRenderer(ctx: EntityRendererProvider.Context) extends EntityRend
       buffer,
       light,
       offset = entity.tickCount + partialTick,
-      isRunningOverride = true
+      isRunningOverride = true,
+      flag = entity.flag
     )
     createHatRenderer.foreach { case (module, method) =>
       try method.invoke(module, entity, pose, buffer, Int.box(light))

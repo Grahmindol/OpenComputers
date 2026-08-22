@@ -1,14 +1,13 @@
 package li.cil.oc.common.item.traits
 
 import net.minecraft.network.chat.Component
-import net.minecraft.world.{InteractionHand, InteractionResult, InteractionResultHolder}
+import net.minecraft.world.{InteractionHand, InteractionResultHolder}
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.{Item, ItemStack}
 import net.minecraft.world.level.Level
 
 /** Adds the double-sneak gesture for resetting an item's component identity. */
 trait ComponentItem extends SimpleItem {
-  @Deprecated
   override def use(world: Level, player: Player, hand: InteractionHand): InteractionResultHolder[ItemStack] =
     player.getItemInHand(hand) match {
       case stack: ItemStack if player.isShiftKeyDown =>
@@ -24,9 +23,8 @@ trait ComponentItem extends SimpleItem {
             player.displayClientMessage(Component.literal("Double click quickly to reset"), true)
           }
         }
-        new InteractionResultHolder(InteractionResult.sidedSuccess(world.isClientSide), resultStack)
+        InteractionResultHolder.sidedSuccess(resultStack, world.isClientSide)
 
-      case stack: ItemStack => use(stack, world, player)
       case _ => super.use(world, player, hand)
     }
 }

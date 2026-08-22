@@ -1,33 +1,25 @@
 package li.cil.oc.common.item
 
-import li.cil.oc.Constants
-import li.cil.oc.Localization
-import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.{api, Constants, Localization, Settings}
 import li.cil.oc.api.machine.Machine
-import li.cil.oc.api.network.Analyzable
 import li.cil.oc.api.network._
 import li.cil.oc.common.blockentity
 import li.cil.oc.server.PacketSender
-import li.cil.oc.util.{BlockPosition, ItemUtils}
-import li.cil.oc.util.ExtendedLevel._
-import li.cil.oc.util.ExtendedItemStack._
-import net.minecraft.world.item.Item
-import net.minecraft.world.item.Item.Properties
-import net.minecraft.world.item.ItemStack
+import li.cil.oc.util.ItemUtils
 import net.minecraft.core.Direction
-import net.minecraft.Util
 import net.minecraft.core.component.DataComponents
-import net.minecraft.world.entity.player.Player
 import net.minecraft.server.level.ServerPlayer
-import net.minecraft.world.level.Level
-import net.minecraft.world.InteractionResult
-import net.minecraft.world.InteractionResultHolder
+import net.minecraft.world.{InteractionHand, InteractionResult, InteractionResultHolder}
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.{Item, ItemStack}
+import net.minecraft.world.item.Item.Properties
 import net.minecraft.world.item.component.CustomData
+import net.minecraft.world.item.context.UseOnContext
+import net.minecraft.world.level.Level
 import net.neoforged.bus.api.SubscribeEvent
+import net.neoforged.neoforge.common.extensions.IItemExtension
 import net.neoforged.neoforge.common.util.FakePlayer
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent
-import net.neoforged.neoforge.common.extensions.IItemExtension
 
 object Analyzer {
   private lazy val analyzer = api.Items.get(Constants.ItemName.Analyzer)
@@ -109,32 +101,42 @@ object Analyzer {
 }
 
 class Analyzer(props: Properties) extends Item(props) with traits.SimpleItem with IItemExtension {
-  override def use(stack: ItemStack, level: Level, player: Player): InteractionResultHolder[ItemStack] = {
+  override def use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder[ItemStack] = {
+    val stack = player.getItemInHand(hand)
     if (player.isCrouching) {
       CustomData.update(DataComponents.CUSTOM_DATA, stack, data => {
         data.remove(Settings.namespace + "clipboard")
       })
+
+      return InteractionResultHolder.sidedSuccess(stack, level.isClientSide)
     }
 
-    super.use(stack, level, player)
+    super.use(level, player, hand)
   }
 
-  override def onItemUse(stack: ItemStack, player: Player, position: BlockPosition, side: Direction, hitX: Float, hitY: Float, hitZ: Float) = {
-    val world = player.level
-    val tag = ItemUtils.getTag(stack)
-    world.getBlockEntity(position) match {
-      case screen: blockentity.Screen if side == screen.facing =>
-        if (player.isCrouching) {
+  override def useOn(ctx: UseOnContext): InteractionResult = {
+    val world = ctx.getLevel
+    val tag = ItemUtils.getTag(ctx.getItemInHand)
+    val hitX = (ctx.getClickLocation.x - ctx.getClickedPos.getX).toFloat
+    val hitY = (ctx.getClickLocation.y - ctx.getClickedPos.getY).toFloat
+    val hitZ = (ctx.getClickLocation.z - ctx.getClickedPos.getZ).toFloat
+
+    val result = world.getBlockEntity(ctx.getClickedPos) match {
+      case screen: blockentity.Screen if ctx.getClickedFace == screen.facing =>
+        if (ctx.isSecondaryUseActive) {
           screen.copyToAnalyzer(hitX, hitY, hitZ)
         }
         else if (tag != null && tag.contains(Settings.namespace + "clipboard")) {
-          if (!world.isClientSide) {
-            screen.origin.buffer.clipboard(tag.getString(Settings.namespace + "clipboard"), player)
+          if (!world.isClientSide && ctx.getPlayer != null) {
+            screen.origin.buffer.clipboard(tag.getString(Settings.namespace + "clipboard"), ctx.getPlayer)
           }
           true
         }
         else false
-      case _ => Analyzer.analyze(position.world.get.getBlockEntity(position), player, side, hitX, hitY, hitZ)
+      case be if ctx.getPlayer != null => Analyzer.analyze(be, ctx.getPlayer, ctx.getClickedFace, hitX, hitY, hitZ)
+      case _ => false
     }
+
+    if (result) InteractionResult.sidedSuccess(world.isClientSide) else InteractionResult.PASS
   }
 }

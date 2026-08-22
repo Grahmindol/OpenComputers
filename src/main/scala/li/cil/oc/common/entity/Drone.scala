@@ -15,7 +15,6 @@ import li.cil.oc.common.{EventHandler, menu}
 import li.cil.oc.integration.util.Wrench
 import li.cil.oc.server.{agent, component}
 import li.cil.oc.util.ExtendedLevel._
-import li.cil.oc.util.ExtendedNBT._
 import li.cil.oc.util.ExtendedDataComponentHolder._
 import li.cil.oc.util.{BlockPosition, InventoryUtils}
 import net.minecraft.core.component.DataComponentHolder
@@ -24,7 +23,7 @@ import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.chat.Component
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
 import net.minecraft.network.syncher.{EntityDataAccessor, EntityDataSerializers, SynchedEntityData}
-import net.minecraft.server.level.{ServerEntity, ServerLevel, ServerPlayer}
+import net.minecraft.server.level.{ServerEntity, ServerPlayer}
 import net.minecraft.util.ColorRGBA
 import net.minecraft.world.entity._
 import net.minecraft.world.entity.item.ItemEntity
@@ -36,7 +35,6 @@ import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.portal.DimensionTransition
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.{InteractionHand, InteractionResult, MenuProvider}
-import net.neoforged.api.distmarker.{Dist, OnlyIn}
 import net.neoforged.neoforge.common.MutableDataComponentHolder
 import net.neoforged.neoforge.fluids.IFluidTank
 
@@ -65,7 +63,7 @@ abstract class DroneInventory(val drone: Drone) extends Inventory
 // someone decides to ship that specific version of the API.
 class Drone(selfType: EntityType[Drone], level: Level) extends Entity(selfType, level) with MachineHost with internal.Drone with internal.Rotatable with Analyzable with Context with Persistable {
   override def getEnvironmentLevel: Level = level
-  
+
   // Some basic constants.
   val gravity = 0.05f
   // low for slow fall (float down)
@@ -228,7 +226,6 @@ class Drone(selfType: EntityType[Drone], level: Level) extends Entity(selfType, 
 
   override def markChanged(): Unit = {}
 
-  @OnlyIn(Dist.CLIENT)
   override def getRopeHoldPosition(dt: Float): Vec3 =
     getPosition(dt).add(0.0, -0.056, 0.0) // Offset: height * 0.85 * 0.7 - 0.25
 
@@ -278,7 +275,7 @@ class Drone(selfType: EntityType[Drone], level: Level) extends Entity(selfType, 
     builder.define(Drone.DataLightColor, Int.box(0x66DD55))
   }
 
-  def initializeAfterPlacement(stack: ItemStack, player: Player, position: Vec3): Unit = {
+  def initializeAfterPlacement(stack: ItemStack, position: Vec3): Unit = {
     info.loadData(stack)
     control.node.changeBuffer(info.storedEnergy - control.node.localBuffer)
     wireThingsTogether()

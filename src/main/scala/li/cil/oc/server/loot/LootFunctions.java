@@ -18,9 +18,6 @@ public final class LootFunctions {
     private static final DeferredRegister<LootItemFunctionType<?>> DR =
             DeferredRegister.create(Registries.LOOT_FUNCTION_TYPE, OpenComputers.ID());
 
-    public static final DeferredHolder<LootItemFunctionType<?>, LootItemFunctionType<SetColor>> SET_COLOR =
-            DR.register("set_color", () -> new LootItemFunctionType<>(SetColor.CODEC));
-
     public static final DeferredHolder<LootItemFunctionType<?>, LootItemFunctionType<CopyColor>> COPY_COLOR =
             DR.register("copy_color", () -> new LootItemFunctionType<>(CopyColor.CODEC));
 

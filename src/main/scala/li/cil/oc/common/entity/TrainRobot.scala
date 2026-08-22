@@ -4,11 +4,17 @@ import net.minecraft.network.chat.Component
 import net.minecraft.core.BlockPos
 import net.minecraft.world.entity.{Entity, EntityType, EquipmentSlot, Mob, MoverType}
 import net.minecraft.world.item.{ArmorItem, ItemStack}
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.network.RegistryFriendlyByteBuf
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.world.phys.Vec3
+import net.neoforged.neoforge.entity.IEntityWithComplexSpawn
 
 object TrainRobot {
+  private val RobotFlagTag = "RobotFlag"
+
   /** Any vanilla or modded head armor can be used as the physical hat. */
   def isHat(stack: ItemStack): Boolean = stack.getItem match {
     case armor: ArmorItem => armor.getEquipmentSlot == EquipmentSlot.HEAD
@@ -28,6 +34,7 @@ object TrainRobot {
     entity.setPos(pos.getX + 0.5, pos.getY, pos.getZ + 0.5)
     entity.setYRot(yaw)
     entity.setYHeadRot(yaw)
+    entity.setRobotFlag(proxy.robot.info.flag)
     entity.getPersistentData.putBoolean("TrainHat", true)
     level.addFreshEntity(entity)
     true
@@ -41,8 +48,38 @@ object TrainRobot {
  * non-player passenger in a conductor seat, so there is no computer, AI, or
  * other robot functionality attached to this entity.
  */
-class TrainRobot(selfType: EntityType[TrainRobot], level: Level) extends Mob(selfType, level) {
+class TrainRobot(selfType: EntityType[TrainRobot], level: Level) extends Mob(selfType, level) with IEntityWithComplexSpawn {
   setNoAi(true)
+
+  private var robotFlag: Option[ResourceLocation] = None
+
+  def flag: Option[ResourceLocation] = robotFlag
+
+  def setRobotFlag(value: Option[ResourceLocation]): Unit = {
+    robotFlag = value
+  }
+
+  override def writeSpawnData(buffer: RegistryFriendlyByteBuf): Unit = {
+    buffer.writeUtf(flag.map(_.toString).getOrElse(""))
+  }
+
+  override def readSpawnData(buffer: RegistryFriendlyByteBuf): Unit = {
+    val value = buffer.readUtf()
+    setRobotFlag(Option(ResourceLocation.tryParse(value)).filter(_ => value.nonEmpty))
+  }
+
+  override def readAdditionalSaveData(nbt: CompoundTag): Unit = {
+    if (nbt.contains(TrainRobot.RobotFlagTag)) {
+      setRobotFlag(Option(ResourceLocation.tryParse(nbt.getString(TrainRobot.RobotFlagTag))))
+    }
+    else {
+      setRobotFlag(None)
+    }
+  }
+
+  override def addAdditionalSaveData(nbt: CompoundTag): Unit = {
+    flag.foreach(value => nbt.putString(TrainRobot.RobotFlagTag, value.toString))
+  }
 
   override protected def registerGoals(): Unit = ()
 

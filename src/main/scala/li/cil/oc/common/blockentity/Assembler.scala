@@ -33,7 +33,7 @@ import net.neoforged.neoforge.common.extensions.IBlockEntityExtension
 
 import scala.jdk.CollectionConverters._
 
-class Assembler(pos: BlockPos, state: BlockState) 
+class Assembler(pos: BlockPos, state: BlockState)
   extends BlockEntity(BlockEntityTypes.ASSEMBLER.get(), pos, state) with traits.Environment with traits.PowerAcceptor
   with traits.Inventory with SidedEnvironment with traits.StateAware with traits.Tickable with DeviceInfo with MenuProvider
     with IBlockEntityExtension {
@@ -172,7 +172,7 @@ class Assembler(pos: BlockPos, state: BlockState)
   override def saveForServer(nbt: CompoundTag, provider: HolderLookup.Provider): Unit = {
     super.saveForServer(nbt, provider)
     if (!output.isEmpty) {
-      nbt.setNewCompoundTag(OutputTag, _ => output.get.save(provider))
+      nbt.put(OutputTag, output.get.save(provider))
     }
     else {
       nbt.remove(OutputTag)

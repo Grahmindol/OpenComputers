@@ -26,7 +26,7 @@ import net.neoforged.neoforge.common.extensions.IBlockEntityExtension
 import java.util
 import scala.collection.convert.ImplicitConversionsToJava._
 
-class Printer(pos: BlockPos, state: BlockState) 
+class Printer(pos: BlockPos, state: BlockState)
   extends BlockEntity(BlockEntityTypes.PRINTER.get(), pos, state) with traits.Environment with traits.Inventory with traits.Rotatable
   with SidedEnvironment with traits.StateAware with traits.Tickable with WorldlyContainer with DeviceInfo with MenuProvider
     with IBlockEntityExtension {
@@ -339,7 +339,7 @@ class Printer(pos: BlockPos, state: BlockState)
     nbt.setNewCompoundTag(DataTag, (nbt: CompoundTag) => data.saveData(nbt, provider))
     nbt.putBoolean(IsActiveTag, isActive)
     nbt.putInt(LimitTag, limit)
-    output.foreach(stack => nbt.setNewCompoundTag(OutputTag, _ => stack.save(provider)))
+    output.foreach(stack => nbt.put(OutputTag, stack.save(provider)))
     nbt.putDouble(TotalTag, totalRequiredEnergy)
     nbt.putDouble(RemainingTag, requiredEnergy)
   }

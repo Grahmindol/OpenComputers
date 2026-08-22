@@ -215,7 +215,7 @@ object ExtendedNBT {
   }
 
   class ExtendedCompoundTag(val nbt: CompoundTag) {
-    def setNewCompoundTag(name: String, f: CompoundTag => Any) = {
+    def setNewCompoundTag(name: String, f: CompoundTag => Unit) = {
       val t = new CompoundTag()
       f(t)
       nbt.put(name, t)

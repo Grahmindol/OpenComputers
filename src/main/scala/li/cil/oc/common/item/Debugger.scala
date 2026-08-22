@@ -1,44 +1,29 @@
 package li.cil.oc.common.item
 
-import li.cil.oc.OpenComputers
-import li.cil.oc.api
+import li.cil.oc.{api, OpenComputers}
 import li.cil.oc.api.network._
-import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedLevel._
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.Item.Properties
-import net.minecraft.world.item.ItemStack
-import net.minecraft.core.Direction
-import net.minecraft.world.entity.player.Player
-import net.minecraft.server.level.ServerPlayer
-import net.neoforged.neoforge.common.util.FakePlayer
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.item.context.UseOnContext
 import net.neoforged.neoforge.common.extensions.IItemExtension
+import net.neoforged.neoforge.common.util.FakePlayer
 
 class Debugger(props: Properties) extends Item(props) with traits.SimpleItem with IItemExtension {
-  override def onItemUse(stack: ItemStack, player: Player, position: BlockPosition, side: Direction, hitX: Float, hitY: Float, hitZ: Float) = {
-    val world = position.world.get
-    player match {
-      case _: FakePlayer => false // Nope
-      case realPlayer: ServerPlayer =>
-        world.getBlockEntity(position) match {
-          case host: SidedEnvironment =>
-            if (!world.isClientSide) {
-              Debugger.reconnect(Array(host.sidedNode(side)))
-            }
-            true
-          case host: Environment =>
-            if (!world.isClientSide) {
-              Debugger.reconnect(Array(host.node))
-            }
-            true
-          case _ =>
-            if (!world.isClientSide) {
-              Debugger.node.remove()
-            }
-            true
-        }
-      case _ => false
+  override def useOn(ctx: UseOnContext): InteractionResult = {
+    val world = ctx.getLevel
+    if (ctx.getPlayer == null || ctx.getPlayer.isInstanceOf[FakePlayer]) return InteractionResult.FAIL
+
+    world.getBlockEntity(ctx.getClickedPos) match {
+      case host: SidedEnvironment =>
+        if (!world.isClientSide) Debugger.reconnect(Array(host.sidedNode(ctx.getClickedFace)))
+      case host: Environment =>
+        if (!world.isClientSide) Debugger.reconnect(Array(host.node))
+      case _ =>
+        if (!world.isClientSide) Debugger.node.remove()
     }
+
+    InteractionResult.sidedSuccess(world.isClientSide)
   }
 }
 

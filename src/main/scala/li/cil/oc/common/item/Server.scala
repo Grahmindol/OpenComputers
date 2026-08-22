@@ -52,7 +52,8 @@ class Server(props: Properties, val tier: Int) extends Item(props) with traits.S
     }
   }
 
-  override def use(stack: ItemStack, level: Level, player: Player): InteractionResultHolder[ItemStack] = {
+  override def use(level: Level, player: Player, hand: InteractionHand): InteractionResultHolder[ItemStack] = {
+    val stack = player.getItemInHand(hand)
     if (!player.isCrouching) {
       if (!level.isClientSide) player match {
         case srvPlr: ServerPlayer => MenuTypes.openServerGui(srvPlr, new ServerInventory {
@@ -64,9 +65,8 @@ class Server(props: Properties, val tier: Int) extends Item(props) with traits.S
           }, -1)
         case _ =>
       }
-      player.swing(InteractionHand.MAIN_HAND)
     }
-    new InteractionResultHolder(InteractionResult.sidedSuccess(level.isClientSide), stack)
+    InteractionResultHolder.sidedSuccess(stack, level.isClientSide)
   }
 
 }

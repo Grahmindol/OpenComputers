@@ -2,6 +2,8 @@ package li.cil.oc.client.renderer.block
 
 import li.cil.oc.{Constants, Settings}
 import li.cil.oc.common.init.OCBlocks
+import li.cil.oc.common.openprinter.OpenPrinter
+import li.cil.oc.common.openprinter.printer.PrinterClientConfig
 import net.minecraft.client.renderer.block.BlockModelShaper
 import net.minecraft.client.resources.model.{BakedModel, ModelResourceLocation}
 import net.minecraft.resources.ResourceLocation
@@ -21,6 +23,8 @@ object ModelInitialization {
   final val PrintBlockLocation           = loc(Constants.BlockName.Print,             "")
   final val PrintItemLocation            = loc(Constants.BlockName.Print,             "inventory")
   final val RobotItemLocation            = loc(Constants.BlockName.Robot,             "inventory")
+  final val DocumentPrinterCubeLocation  = ModelResourceLocation.standalone(
+    OpenPrinter.id("block/document_printer_cube"))
 
   private def loc(name: String, variant: String): ModelResourceLocation = {
     val id = ResourceLocation.fromNamespaceAndPath(Settings.resourceDomain, name)
@@ -53,6 +57,10 @@ object ModelInitialization {
   // ── Event handlers ─────────────────────────────────────────────────────────
 
   @SubscribeEvent
+  def onRegisterAdditional(e: ModelEvent.RegisterAdditional): Unit =
+    e.register(DocumentPrinterCubeLocation)
+
+  @SubscribeEvent
   def onModifyBakingResult(e: ModelEvent.ModifyBakingResult): Unit = {
     rebuildModelRemappings()
     val registry = e.getModels
@@ -63,7 +71,6 @@ object ModelInitialization {
     registry.put(PrintBlockLocation,           PrintModel)
     registry.put(PrintItemLocation,            PrintModel)
     registry.put(RobotItemLocation,            RobotModel)
-    registry.put(loc(Constants.ItemName.Drone, "inventory"), DroneModel)
 
     val modelOverrides = Map[String, BakedModel => BakedModel](
       Constants.BlockName.ScreenTier1 -> (_ => ScreenModel),
@@ -86,5 +93,17 @@ object ModelInitialization {
 
     for ((real, virtual) <- modelRemappings)
       registry.put(real, registry.get(virtual))
+
+    if (!PrinterClientConfig.ENABLE_CUSTOM_MODEL.get()) {
+      val cubeModel = registry.get(DocumentPrinterCubeLocation)
+      if (cubeModel != null) {
+        val printerId = OpenPrinter.id("document_printer")
+        registry.keySet().toArray.foreach {
+          case location: ModelResourceLocation if location.id() == printerId =>
+            registry.put(location, cubeModel)
+          case _ =>
+        }
+      }
+    }
   }
 }

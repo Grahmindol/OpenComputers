@@ -102,6 +102,9 @@ neoForge {
         server {
             server()
 
+            // Keep client-only mods in the client run's game directory.
+            gameDirectory = project.file('run/server')
+
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
             programArgument '--nogui'
         }
@@ -124,6 +127,10 @@ neoForge {
             )
         }
     }
+}
+
+tasks.named('runServer', JavaExec).configure {
+    standardInput = System.in
 }
 
 sourceSets.main.resources {
