@@ -166,6 +166,7 @@ class Tablet(props: Properties) extends Item(props) with traits.SimpleItem with 
 }
 
 class TabletWrapper(stack: ItemStack, player: Player) extends ItemStateWrapper(stack, player) {
+  val data = new TabletData()
   val internalComponent: TabletComponent = if (getEnvironmentLevel.isClientSide) null else new TabletComponent(this)
 
   // Allow T3 tablets to have 8-bit color since they use a T3 screen.
@@ -254,6 +255,7 @@ class TabletWrapper(stack: ItemStack, player: Player) extends ItemStateWrapper(s
   // ----------------------------------------------------------------------- //
 
   override def onInit(level: Level,player: Player): Unit = {
+    super.onInit(level, player)
     OpenComputers.log.info(s"TabletWrapper initialization")
     componentSlots collect {
       case Some(buffer: api.internal.TextBuffer) =>

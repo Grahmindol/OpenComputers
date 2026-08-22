@@ -7,7 +7,7 @@ import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.client.gui
 import li.cil.oc.common.container.ComponentInventory
 import li.cil.oc._
-import li.cil.oc.common.item.data.TabletData
+import li.cil.oc.common.item.data.{ItemStateData, TabletData}
 import li.cil.oc.common.menu.MenuTypes
 import li.cil.oc.server.PacketSender
 import li.cil.oc.util.RotationHelper
@@ -29,7 +29,7 @@ abstract class ItemStateWrapper(var stack: ItemStack, var player: Player ) exten
   // kept the same and components are not required to properly handle level changes.
   val getEnvironmentLevel: Level = player.level
 
-  val data = new TabletData()
+  val data: ItemStateData
   lazy val machine: api.machine.Machine = if (getEnvironmentLevel.isClientSide) null else Machine.create(this)
 
   def isCreative: Boolean
@@ -89,6 +89,11 @@ abstract class ItemStateWrapper(var stack: ItemStack, var player: Player ) exten
     if (node == this.node) {
       connectComponents()
       node.connect(internalComponent.node)
+
+      if(!isInitialized) {
+        server.PacketSender.sendMachineItemState(player.asInstanceOf[ServerPlayer], stack, machine.isRunning)
+        isInitialized = true
+      }
     }
   }
 
@@ -145,7 +150,9 @@ abstract class ItemStateWrapper(var stack: ItemStack, var player: Player ) exten
 
   override def componentSlot(address: String): Int = componentSlots.indexWhere(_.exists(env => env.node != null && env.node.address == address))
 
-  override def onMachineConnect(node: Node): Unit = onConnect(node)
+  override def onMachineConnect(node: Node): Unit = {
+    onConnect(node)
+  }
 
   override def onMachineDisconnect(node: Node): Unit = onDisconnect(node)
 
@@ -155,23 +162,21 @@ abstract class ItemStateWrapper(var stack: ItemStack, var player: Player ) exten
 
   // ----------------------------------------------------------------------- //
 
-  def onInit(level: Level, player: Player): Unit = {}
+  def onInit(level: Level, player: Player): Unit = {
+    // This delayed initialization on the client side is required to allow
+    // the server to set up the tablet wrapper first (since packets generated
+    // in the component setup would otherwise be queued before the events that
+    // caused this wrapper's initialization).
+    if (!isInitialized && level.isClientSide) {
+      isInitialized = true
+      connectComponents()
+    }
+  }
 
   def onDataUpdate(level: Level, player: Player): Unit = {}
 
   def update(level: Level, player: Player): Unit = {
     this.player = player
-    if (!isInitialized && level.isClientSide) {
-      isInitialized = true
-      // This delayed initialization on the client side is required to allow
-      // the server to set up the tablet wrapper first (since packets generated
-      // in the component setup would otherwise be queued before the events that
-      // caused this wrapper's initialization).
-      connectComponents()
-      onInit(level, player)
-
-      client.PacketSender.sendMachineItemStateRequest(stack, level.registryAccess())
-    }
 
     if (!level.isClientSide) {
       if (isCreative && level.getGameTime % Settings.get.tickFrequency == 0) {
@@ -211,7 +216,6 @@ abstract class ItemStateWrapper(var stack: ItemStack, var player: Player ) exten
     }
     else {
       if (!level.isClientSide) {
-        OpenComputers.log.info("interaction !!! (server)")
         machine.start()
         machine.lastError match {
           case message if message != null => player.sendSystemMessage(Localization.Analyzer.LastError(message))
@@ -219,7 +223,6 @@ abstract class ItemStateWrapper(var stack: ItemStack, var player: Player ) exten
         }
       }
       else {
-        OpenComputers.log.info("interaction !!! (client)")
         componentSlots.collectFirst {
           case Some(buffer: api.internal.TextBuffer) => buffer
         } match {

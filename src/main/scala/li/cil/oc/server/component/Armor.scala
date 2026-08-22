@@ -31,9 +31,19 @@ class Armor (val armor: ArmorWrapper) extends AbstractManagedEnvironment with De
 
   // ----------------------------------------------------------------------- //
 
-  @Callback(doc = """function():number -- Gets the pitch of the player holding the tablet.""")
+  @Callback(doc = """function():number -- Gets the pitch of the player holding the armor.""")
   def getPitch(context: Context, args: Arguments): Array[AnyRef] = result(armor.player.getXRot)
 
-  @Callback(doc = """function():number -- Gets the yaw of the player holding the tablet.""")
+  @Callback(doc = """function():number -- Gets the yaw of the player holding the armor.""")
   def getYaw(context: Context, args: Arguments): Array[AnyRef] = result(armor.player.getYRot)
+
+  @Callback(doc = """function():number -- Gets the color of the armor""")
+  def getColor(context: Context, args: Arguments): Array[AnyRef] = result(armor.data.color)
+
+  @Callback(doc = """function():number -- Sets the color of the armor""")
+  def setColor(context: Context, args: Arguments): Array[AnyRef] = {
+    val newColor = args.checkInteger(0)
+    armor.data.color = newColor
+    result(true)
+  }
 }

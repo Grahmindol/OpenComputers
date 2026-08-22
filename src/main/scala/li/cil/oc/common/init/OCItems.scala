@@ -9,7 +9,7 @@ import li.cil.oc.common.item.traits.SimpleItem
 import li.cil.oc.common.{Loot, Tier, item}
 import li.cil.oc.server.machine.luac.LuaStateFactory
 import li.cil.oc.util.{Rarity => OCRarity}
-import li.cil.oc.{Constants, OpenComputers, Settings, common}
+import li.cil.oc.{Constants, OpenComputers, Settings, api, common}
 import net.minecraft.core.registries.Registries
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
@@ -308,7 +308,9 @@ object OCItems extends ItemAPI {
     data.items(31) = safeGetStack(Constants.ItemName.OpenOS)
     data.container = safeGetStack(Constants.BlockName.DiskDrive)
 
-    data.createItemStack()
+    val stack = api.Items.get(Constants.ItemName.Tablet).createItemStack(1)
+    data.saveData(stack)
+    stack
   }
 
   def createChargedHoverBoots(): ItemStack = {

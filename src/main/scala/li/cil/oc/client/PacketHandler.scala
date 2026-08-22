@@ -247,19 +247,13 @@ object PacketHandler extends CommonPacketHandler {
     }
 
   def onMachineItemStateResponse(p: PacketParser) : Unit = {
-    // TODO : make separate event for armor and tablet.
     val stack = p.readItemStack()
     val running = p.readBoolean()
 
-    ItemStateManager.Client.get(stack, p.player) match {
-      case wrapper: ArmorWrapper =>
-        wrapper.data.isRunning = running
-        wrapper.isDirty = false
-      case wrapper: TabletWrapper =>
-        wrapper.data.isRunning = running
-        wrapper.isDirty = false
-      case _ => // ignore
-    }
+    val wrapper = ItemStateManager.Client.get(stack, p.player)
+    wrapper.data.isRunning = running
+    wrapper.isDirty = false
+    wrapper.onInit(p.player.level(), p.player)
   }
 
   def onArmorInteractionResponse(p: PacketParser) : Unit = {

@@ -13,6 +13,7 @@ import net.minecraft.world.level.Level
 
 class ArmorWrapper(player: Player) extends ItemStateWrapper(player.getItemBySlot(EquipmentSlot.CHEST), player) {
 
+  val data = new ArmorData()
   var checksum: String = ""
 
   val internalComponent: ArmorComponent = if (getEnvironmentLevel.isClientSide) null else new ArmorComponent(this)
@@ -72,6 +73,7 @@ class ArmorWrapper(player: Player) extends ItemStateWrapper(player.getItemBySlot
   // ----------------------------------------------------------------------- //
 
   override def onInit(level: Level,player: Player): Unit = {
+    super.onInit(level, player)
     OpenComputers.log.info(s"ArmorWrapper initialization")
     componentSlots collect {
       case Some(buffer: api.internal.TextBuffer) =>
@@ -84,8 +86,6 @@ class ArmorWrapper(player: Player) extends ItemStateWrapper(player.getItemBySlot
     data.isRunning = machine.isRunning
     data.energy = internalComponent.node.globalBuffer()
     data.maxEnergy = internalComponent.node.globalBufferSize()
-
-
   }
 
 }

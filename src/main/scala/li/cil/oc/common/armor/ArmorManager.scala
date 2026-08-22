@@ -9,21 +9,18 @@ import li.cil.oc.util.ItemUtils
 import net.minecraft.client.{KeyMapping, Minecraft}
 import net.minecraft.core.component.DataComponents
 import net.minecraft.nbt.Tag
-import net.minecraft.util.ProblemReporter.Collector
-import net.minecraft.world.entity.{EquipmentSlot, LivingEntity}
+import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.component.CustomData
 import net.neoforged.bus.api.{IEventBus, SubscribeEvent}
 import net.neoforged.neoforge.client.event.{ClientTickEvent, RegisterKeyMappingsEvent}
 import net.neoforged.neoforge.common.NeoForge
-import net.neoforged.neoforge.event.tick.{EntityTickEvent, LevelTickEvent, ServerTickEvent}
+import net.neoforged.neoforge.event.tick.EntityTickEvent
 import org.lwjgl.glfw.GLFW
 
 import java.util.UUID
-import java.util.stream.Collectors
 import scala.annotation.unused
-import scala.jdk.CollectionConverters.IterableHasAsScala
 
 object ArmorManager {
 
@@ -116,21 +113,13 @@ object ArmorManager {
     }
   }
 
-  /*@SubscribeEvent
-  def onServerTick(e: ServerTickEvent.Pre): Unit = {
-    val server = e.getServer
-    for (player <- server.getPlayerList.getPlayers.asScala) {
-      get(player).foreach(_.update(player.level, player))
-    }
-  }*/
-
   @SubscribeEvent
   def onEntityTick(e: EntityTickEvent.Pre): Unit = {
     e.getEntity match {
       case p: Player =>get(p).foreach(wrapper =>
-
         wrapper.update(p.level, p)
       )
+      case _ =>
     }
   }
 }
