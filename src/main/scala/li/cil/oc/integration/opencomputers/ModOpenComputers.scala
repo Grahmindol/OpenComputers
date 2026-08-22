@@ -18,8 +18,8 @@ import li.cil.oc.client.renderer.markdown.segment.render.BlockImageProvider
 import li.cil.oc.client.renderer.markdown.segment.render.ItemImageProvider
 import li.cil.oc.client.renderer.markdown.segment.render.TagImageProvider
 import li.cil.oc.client.renderer.markdown.segment.render.TextureImageProvider
-import li.cil.oc.common.armor.ArmorWrapper
-import li.cil.oc.common.{EventHandler, ItemStateManager, Loot, SaveHandler}
+import li.cil.oc.common.armor.{ArmorTemplate, ArmorWrapper, DriverTrim}
+import li.cil.oc.common.{EventHandler, ItemMachineManager, Loot, SaveHandler}
 import li.cil.oc.common.block.SimpleBlock
 import li.cil.oc.common.event._
 import li.cil.oc.common.init.OCItems
@@ -326,9 +326,9 @@ object ModOpenComputers extends ModProxy {
     api.Nanomachines.addProvider(MagnetProvider)
 
 
-    NeoForge.EVENT_BUS.register(ItemStateManager)
-    ItemStateManager.register(OCItems.Tablet.get(), (s,p) => new TabletWrapper(s,p))
-    ItemStateManager.register(net.minecraft.world.item.Items.NETHERITE_CHESTPLATE, (_, p) => new ArmorWrapper(p))
+    NeoForge.EVENT_BUS.register(ItemMachineManager)
+    ItemMachineManager.register(OCItems.Tablet.get(), (s, p) => new TabletWrapper(s,p))
+    ItemMachineManager.register(net.minecraft.world.item.Items.NETHERITE_CHESTPLATE, (_, p) => new ArmorWrapper(p))
 
 
     if(FMLEnvironment.dist.isClient) {

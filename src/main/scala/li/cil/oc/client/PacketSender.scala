@@ -269,7 +269,7 @@ object PacketSender {
   }
 
   def sendItemStateInteraction(stack: ItemStack, registryAccess: RegistryAccess): Unit = {
-    val pb = new SimplePacketBuilder(PacketType.ArmorInteractionRequest)
+    val pb = new SimplePacketBuilder(PacketType.MachineItemInteractionRequest)
     pb.writeItemStack(stack, registryAccess)
     pb.sendToServer()
   }

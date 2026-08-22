@@ -11,15 +11,14 @@ import li.cil.oc.common.datacomponents.CompoundStorage
 import li.cil.oc.common.nanomachines.ControllerImpl
 import li.cil.oc.util.{BlockPosition, PackedColor}
 import li.cil.oc.{Settings, api}
-import net.minecraft.core.{BlockPos, Direction}
 import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.{BlockPos, Direction}
 import net.minecraft.nbt.{CompoundTag, NbtIo}
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundSource
-import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.item.ItemStack
@@ -161,12 +160,9 @@ object PacketSender {
     pb.sendToPlayer(player)
   }
 
-  def sendItemStateInteractionResponse(player: ServerPlayer, stack: ItemStack, isRunning: Boolean): Unit = {
-    val pb = new SimplePacketBuilder(PacketType.ArmorInteractionResponse)
-
+  def sendMachineItemInteractionResponse(player: ServerPlayer, stack: ItemStack): Unit = {
+    val pb = new SimplePacketBuilder(PacketType.MachineItemInteractionResponse)
     pb.writeItemStack(stack, player.server.registryAccess())
-    pb.writeBoolean(isRunning)
-
     pb.sendToPlayer(player)
   }
 

@@ -1,20 +1,11 @@
 package li.cil.oc.integration.opencomputers
 
-import li.cil.oc.Constants
-import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.{Constants, Settings, api}
 import li.cil.oc.api.network.{Component, EnvironmentHost, ManagedEnvironment, Visibility}
-import li.cil.oc.common.{ItemStateManager, Slot}
-import li.cil.oc.common.item.Tablet
 import li.cil.oc.common.item.data.TabletData
-import li.cil.oc.util.ItemUtils
-import net.minecraft.core.component.DataComponents
-import li.cil.oc.util.ExtendedItemStack._
-import net.minecraft.world.item.ItemStack
+import li.cil.oc.common.{ItemMachineManager, Slot}
 import net.minecraft.nbt.{CompoundTag, Tag}
-import net.minecraft.world.item.component.CustomData
-
-import java.util.function.Consumer
+import net.minecraft.world.item.ItemStack
 
 object DriverTablet extends Item {
   override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
@@ -23,7 +14,7 @@ object DriverTablet extends Item {
   override def createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment =
     if (host.getEnvironmentLevel != null && host.getEnvironmentLevel.isClientSide) null
     else {
-      ItemStateManager.Server.cache.invalidate(ItemStateManager.getOrCreateId(stack))
+      ItemMachineManager.Server.cache.invalidate(ItemMachineManager.getOrCreateId(stack))
       val data = new TabletData(stack)
       val index = fileSystemIndex(data)
       if (index < 0) null

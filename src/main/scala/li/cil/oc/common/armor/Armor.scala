@@ -1,14 +1,13 @@
-package li.cil.oc.server.component
+package li.cil.oc.common.armor
 
 import li.cil.oc.api.Network
-import li.cil.oc.{Constants, Settings}
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.{DeviceAttribute, DeviceClass}
 import li.cil.oc.api.machine.{Arguments, Callback, Context}
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
-import li.cil.oc.common.armor.ArmorWrapper
-import li.cil.oc.common.item.TabletWrapper
+import li.cil.oc.server.component.result
+import li.cil.oc.{Constants, Settings}
 
 import java.util
 import scala.jdk.CollectionConverters.MapHasAsJava

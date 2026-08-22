@@ -1,18 +1,17 @@
-package li.cil.oc.server.component
+package li.cil.oc.common.armor
 
 import li.cil.oc.api.Network
-import li.cil.oc.{Constants, Settings}
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.{DeviceAttribute, DeviceClass}
-import li.cil.oc.api.network.Visibility
+import li.cil.oc.api.network.{Node, Visibility}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import net.minecraft.world.item.armortrim.TrimPattern
 
 import java.util
-import scala.collection.convert.ImplicitConversionsToJava._
+import scala.jdk.CollectionConverters.MapHasAsJava
 
 class Trim(pattern :TrimPattern) extends AbstractManagedEnvironment with DeviceInfo {
-  override val node = Network.newNode(this, Visibility.Neighbors).
+  override val node: Node = Network.newNode(this, Visibility.Neighbors).
     create()
 
   private final lazy val deviceInfo = Map(
@@ -20,5 +19,5 @@ class Trim(pattern :TrimPattern) extends AbstractManagedEnvironment with DeviceI
     DeviceAttribute.Description -> pattern.description().getString
   )
 
-  override def getDeviceInfo: util.Map[String, String] = deviceInfo
+  override def getDeviceInfo: util.Map[String, String] = deviceInfo.asJava
 }

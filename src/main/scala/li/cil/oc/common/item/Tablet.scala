@@ -5,7 +5,7 @@ import li.cil.oc.api.driver.item.Container
 import li.cil.oc.api.network.Node
 import li.cil.oc.client.KeyBindings
 import li.cil.oc.common.item.data.TabletData
-import li.cil.oc.common.{ItemStateManager, ItemStateWrapper, Slot, Tier}
+import li.cil.oc.common.{ItemMachineManager, ItemMachineWrapper, Slot, Tier}
 import li.cil.oc.integration.opencomputers.DriverScreen
 import li.cil.oc.server.component.{Tablet => TabletComponent}
 import li.cil.oc.util._
@@ -60,7 +60,7 @@ class Tablet(props: Properties) extends Item(props) with traits.SimpleItem with 
 
   override def getBarWidth(stack: ItemStack): Int = {
     if (stack.has(DataComponents.CUSTOM_DATA)) {
-      val data = ItemStateManager.Client.getWeak(stack) match {
+      val data = ItemMachineManager.Client.getWeak(stack) match {
         case Some(wrapper) => wrapper.asInstanceOf[TabletWrapper].data
         case _ => new TabletData(stack)
       }
@@ -101,7 +101,7 @@ class Tablet(props: Properties) extends Item(props) with traits.SimpleItem with 
         if (level.isClientSide && player.getUseItemRemainingTicks == TimeToAnalyze && api.Items.get(player.getUseItem) == api.Items.get(Constants.ItemName.Tablet)) {
           Audio.play(player.getX.toFloat, player.getY.toFloat + 2, player.getZ.toFloat, ".")
         }
-        ItemStateManager.get(stack, player).update(level, player)
+        ItemMachineManager.get(stack, player).update(level, player)
       case _ =>
     }
 
@@ -131,7 +131,7 @@ class Tablet(props: Properties) extends Item(props) with traits.SimpleItem with 
           if (!level.isClientSide) {
             Tablet.currentlyAnalyzing match {
               case Some((position, side, hitX, hitY, hitZ)) => try {
-                val computer = ItemStateManager.get(stack, player).machine
+                val computer = ItemMachineManager.get(stack, player).machine
                 if (computer.isRunning) {
                   val data = new CompoundTag()
                   computer.node.sendToReachable("tablet.use", data, stack, player, position, side, Float.box(hitX), Float.box(hitY), Float.box(hitZ))
@@ -165,7 +165,7 @@ class Tablet(props: Properties) extends Item(props) with traits.SimpleItem with 
   }
 }
 
-class TabletWrapper(stack: ItemStack, player: Player) extends ItemStateWrapper(stack, player) {
+class TabletWrapper(stack: ItemStack, player: Player) extends ItemMachineWrapper(stack, player) {
   val data = new TabletData()
   val internalComponent: TabletComponent = if (getEnvironmentLevel.isClientSide) null else new TabletComponent(this)
 

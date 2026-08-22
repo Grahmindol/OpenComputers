@@ -2,7 +2,7 @@ package li.cil.oc.client.renderer
 
 import com.mojang.blaze3d.vertex.{PoseStack, VertexConsumer}
 import com.mojang.math.Axis
-import li.cil.oc.common.ItemStateManager
+import li.cil.oc.common.ItemMachineManager
 import li.cil.oc.{Constants, api}
 import li.cil.oc.common.component.{TextBuffer => ComponentTextBuffer}
 import li.cil.oc.common.item.{Tablet, TabletWrapper}
@@ -27,9 +27,9 @@ object TabletRenderer {
     if (api.Items.get(event.getItemStack) != api.Items.get(Constants.ItemName.Tablet)) return
 
     val player = Minecraft.getInstance.player
-    val wrapper = ItemStateManager.Client.get(event.getItemStack).orElse {
-      Option.when(player != null && ItemStateManager.getId(event.getItemStack).nonEmpty) {
-        ItemStateManager.Client.get(event.getItemStack, player)
+    val wrapper = ItemMachineManager.Client.get(event.getItemStack).orElse {
+      Option.when(player != null && ItemMachineManager.getId(event.getItemStack).nonEmpty) {
+        ItemMachineManager.Client.get(event.getItemStack, player)
       }
     }
     val buffer = wrapper.flatMap(_.componentSlots.collectFirst {

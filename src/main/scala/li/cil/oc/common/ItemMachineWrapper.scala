@@ -23,7 +23,7 @@ import net.neoforged.neoforge.common.MutableDataComponentHolder
 
 import scala.jdk.CollectionConverters.IterableHasAsJava
 
-abstract class ItemStateWrapper(var stack: ItemStack, var player: Player ) extends ComponentInventory with MachineHost with MenuProvider with  api.internal.Tablet{
+abstract class ItemMachineWrapper(var stack: ItemStack, var player: Player ) extends ComponentInventory with MachineHost with MenuProvider with  api.internal.Tablet{
   // Remember our *original* level, so we know which tablets to clear on dimension
   // changes of players holding tablets - since the player entity instance may be
   // kept the same and components are not required to properly handle level changes.

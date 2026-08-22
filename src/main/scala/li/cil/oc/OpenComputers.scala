@@ -1,16 +1,15 @@
 package li.cil.oc
 
 import li.cil.oc.client.ColorHandler
-import li.cil.oc.common.armor.{ArmorManager, ArmorWrapper}
+import li.cil.oc.common.armor.ArmorManager
 import li.cil.oc.common.blockentity.BlockEntityTypes
 import li.cil.oc.common.datacomponents.OCComponents
 import li.cil.oc.common.entity.EntityTypes
 import li.cil.oc.common.init.{OCBlocks, OCItems}
-import li.cil.oc.common.item.TabletWrapper
 import li.cil.oc.common.menu.MenuTypes
 import li.cil.oc.common.openprinter.OpenPrinter
 import li.cil.oc.common.recipe.Recipes
-import li.cil.oc.common.{IMC, ItemStateManager, Proxy}
+import li.cil.oc.common.{IMC, Proxy}
 import li.cil.oc.integration.Mods
 import li.cil.oc.server.command.CommandHandler
 import li.cil.oc.server.loot.LootFunctions

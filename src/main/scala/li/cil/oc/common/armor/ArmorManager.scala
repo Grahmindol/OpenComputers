@@ -3,7 +3,7 @@ package li.cil.oc.common.armor
 import com.mojang.blaze3d.platform.InputConstants
 import li.cil.oc.Settings
 import li.cil.oc.client.PacketSender
-import li.cil.oc.common.ItemStateManager
+import li.cil.oc.common.ItemMachineManager
 import li.cil.oc.common.datacomponents.OCComponents
 import li.cil.oc.util.ItemUtils
 import net.minecraft.client.{KeyMapping, Minecraft}
@@ -88,7 +88,7 @@ object ArmorManager {
     } else {
       //val currentChecksum = computeArmorChecksum(player)
 
-      ItemStateManager.get(chestStack, player) match {
+      ItemMachineManager.get(chestStack, player) match {
         case wrapper: ArmorWrapper => Some (wrapper)
         case _ => None
       }

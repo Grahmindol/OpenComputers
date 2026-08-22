@@ -1,9 +1,10 @@
-package li.cil.oc.common.template
+package li.cil.oc.common.armor
 
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.{ImmutableItemStack, internal}
 import li.cil.oc.common.datacomponents.OCComponents
 import li.cil.oc.common.item.data.TabletData
+import li.cil.oc.common.template.Template
 import li.cil.oc.common.{Slot, Tier}
 import li.cil.oc.{Constants, Localization, Settings, api}
 import net.minecraft.core.component.DataComponents
@@ -45,24 +46,25 @@ object ArmorTemplate extends Template {
 
 
   private def hasTrim(inventory: Container) = exists(inventory, api.Driver.driverFor(_, hostClass) match {
-    case li.cil.oc.integration.opencomputers.DriverTrim => true
+    case DriverTrim => true
     case _ => false
   })
 
-  def validate(inventory: Container): Array[AnyRef] = {
+  def validateChest(inventory: Container): Array[AnyRef] = {
     val hasTrim = this.hasTrim(inventory)
     val hasCPU = this.hasCPU(inventory)
     val hasRAM = this.hasRAM(inventory)
-    val requiresRAM = this.requiresRAM(inventory)
     val complexity = this.complexity(inventory)
     val maxComplexity = this.maxComplexity(inventory)
 
-    val valid = hasTrim //&& hasCPU && (hasRAM || !requiresRAM) && complexity <= maxComplexity
+    val valid = hasTrim && hasCPU && hasRAM && complexity <= maxComplexity
 
     val progress =
       if (!hasCPU) Localization.Assembler.InsertCPU
-      else if (!hasRAM && requiresRAM) Localization.Assembler.InsertRAM
+      else if (!hasRAM) Localization.Assembler.InsertRAM
+      else if (!hasTrim) Localization.Assembler.InsertTrim
       else Localization.Assembler.Complexity(complexity, maxComplexity)
+
 
     val warnings = mutable.ArrayBuffer.empty[Component]
     for ((name, check) <- suggestedComponents) {
@@ -75,6 +77,20 @@ object ArmorTemplate extends Template {
     }
 
     Array(valid: java.lang.Boolean, progress, warnings.toArray)
+  }
+
+  def validate(inventory: Container): Array[AnyRef] = {
+    val hasTrim = this.hasTrim(inventory)
+    val complexity = this.complexity(inventory)
+    val maxComplexity = this.maxComplexity(inventory)
+
+    val valid = hasTrim && complexity <= maxComplexity
+
+    val progress =
+      if (!hasTrim) Localization.Assembler.InsertTrim
+      else Localization.Assembler.Complexity(complexity, maxComplexity)
+
+    Array(valid: java.lang.Boolean, progress, mutable.ArrayBuffer.empty[Component])
   }
 
   def assemble(inventory: Container): Array[AnyRef] = {
@@ -107,9 +123,9 @@ object ArmorTemplate extends Template {
     // Helmet
     api.IMC.registerAssemblerTemplate(
       "Helmet Upgrade",
-      "li.cil.oc.common.template.ArmorTemplate.selectHelmet",
-      "li.cil.oc.common.template.ArmorTemplate.validate",
-      "li.cil.oc.common.template.ArmorTemplate.assemble",
+      "li.cil.oc.common.armor.ArmorTemplate.selectHelmet",
+      "li.cil.oc.common.armor.ArmorTemplate.validate",
+      "li.cil.oc.common.armor.ArmorTemplate.assemble",
       hostClass,
       null,Array(
         Tier.Three,
@@ -120,7 +136,7 @@ object ArmorTemplate extends Template {
         (Slot.Trim, Tier.Any),
         null,
         null,
-        (Slot.CPU, Tier.Two),
+        null,
         null,
         null,
         null,
@@ -130,11 +146,13 @@ object ArmorTemplate extends Template {
 
     api.IMC.registerAssemblerTemplate(
       "Chestplate Upgrade",
-      "li.cil.oc.common.template.ArmorTemplate.selectChestplate",
-      "li.cil.oc.common.template.ArmorTemplate.validate",
-      "li.cil.oc.common.template.ArmorTemplate.assemble",
+      "li.cil.oc.common.armor.ArmorTemplate.selectChestplate",
+      "li.cil.oc.common.armor.ArmorTemplate.validateChest",
+      "li.cil.oc.common.armor.ArmorTemplate.assemble",
       hostClass,
-      null,
+      Array(
+        Tier.Three
+      ),
       Array(
         Tier.Three,
         Tier.Two,
@@ -154,9 +172,9 @@ object ArmorTemplate extends Template {
 
     api.IMC.registerAssemblerTemplate(
       "Leggings Upgrade",
-      "li.cil.oc.common.template.ArmorTemplate.selectLeggings",
-      "li.cil.oc.common.template.ArmorTemplate.validate",
-      "li.cil.oc.common.template.ArmorTemplate.assemble",
+      "li.cil.oc.common.armor.ArmorTemplate.selectLeggings",
+      "li.cil.oc.common.armor.ArmorTemplate.validate",
+      "li.cil.oc.common.armor.ArmorTemplate.assemble",
       hostClass,
       null,Array(
         Tier.Three,
@@ -167,7 +185,7 @@ object ArmorTemplate extends Template {
         (Slot.Trim, Tier.Any),
         null,
         null,
-        (Slot.CPU, Tier.Two),
+        null,
         null,
         null,
         null,
@@ -177,9 +195,9 @@ object ArmorTemplate extends Template {
 
     api.IMC.registerAssemblerTemplate(
       "Boots Upgrade",
-      "li.cil.oc.common.template.ArmorTemplate.selectBoots",
-      "li.cil.oc.common.template.ArmorTemplate.validate",
-      "li.cil.oc.common.template.ArmorTemplate.assemble",
+      "li.cil.oc.common.armor.ArmorTemplate.selectBoots",
+      "li.cil.oc.common.armor.ArmorTemplate.validate",
+      "li.cil.oc.common.armor.ArmorTemplate.assemble",
       hostClass,
       null,Array(
         Tier.Three,
@@ -190,7 +208,7 @@ object ArmorTemplate extends Template {
         (Slot.Trim, Tier.Any),
         null,
         null,
-        (Slot.CPU, Tier.Two),
+        null,
         null,
         null,
         null,

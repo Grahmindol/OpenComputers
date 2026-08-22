@@ -25,15 +25,15 @@ import java.util.concurrent.{Callable, TimeUnit}
 import scala.annotation.unused
 import scala.jdk.CollectionConverters.{IterableHasAsJava, IterableHasAsScala, MapHasAsScala}
 
-object ItemStateManager {
-  private type WrapperFactory = (ItemStack, Player) => ItemStateWrapper
+object ItemMachineManager {
+  private type WrapperFactory = (ItemStack, Player) => ItemMachineWrapper
   private var factories: Map[Item, WrapperFactory] = Map.empty
 
   def register(item: Item, factory: WrapperFactory): Unit = {
     factories += (item -> factory)
   }
 
-  def get(stack: ItemStack, holder: Player): ItemStateWrapper = {
+  def get(stack: ItemStack, holder: Player): ItemMachineWrapper = {
     if (holder.level.isClientSide) Client.get(stack, holder)
     else Server.get(stack, holder)
   }
@@ -95,19 +95,19 @@ object ItemStateManager {
 
   // -------------------------------------------------------------- //
 
-  abstract class Cache extends Callable[ItemStateWrapper] with RemovalListener[String, ItemStateWrapper] {
-    val cache: com.google.common.cache.Cache[String, ItemStateWrapper] = com.google.common.cache.CacheBuilder.newBuilder()
+  abstract class Cache extends Callable[ItemMachineWrapper] with RemovalListener[String, ItemMachineWrapper] {
+    val cache: com.google.common.cache.Cache[String, ItemMachineWrapper] = com.google.common.cache.CacheBuilder.newBuilder()
       .expireAfterAccess(timeout, TimeUnit.SECONDS)
       .removalListener(this)
-      .asInstanceOf[CacheBuilder[String, ItemStateWrapper]]
-      .build[String, ItemStateWrapper]()
+      .asInstanceOf[CacheBuilder[String, ItemMachineWrapper]]
+      .build[String, ItemMachineWrapper]()
 
     protected def timeout = 10
 
     private var currentStack: ItemStack = _
     private var currentHolder: Player = _
 
-    def get(stack: ItemStack, holder: Player): ItemStateWrapper = {
+    def get(stack: ItemStack, holder: Player): ItemMachineWrapper = {
       val id = getOrCreateId(stack)
       cache.synchronized {
         currentStack = stack
@@ -147,7 +147,7 @@ object ItemStateManager {
       }
     }
 
-    def call: ItemStateWrapper = {
+    def call: ItemMachineWrapper = {
       factories.get(currentStack.getItem) match {
         case Some(factory) =>
           factory(currentStack, currentHolder)
@@ -156,7 +156,7 @@ object ItemStateManager {
       }
     }
 
-    def onRemoval(e: RemovalNotification[String, ItemStateWrapper]): Unit = {
+    def onRemoval(e: RemovalNotification[String, ItemMachineWrapper]): Unit = {
       val state = e.getValue
       if (state.node != null) {
         if (state.autoSave) state.writeToNBT(state.player.registryAccess())
@@ -178,13 +178,13 @@ object ItemStateManager {
 
     def cleanUp(): Unit = cache.synchronized(cache.cleanUp())
 
-    def keepAlive(): ImmutableMap[String, ItemStateWrapper] = cache.getAllPresent(cache.asMap.asScala.keys.asJava)
+    def keepAlive(): ImmutableMap[String, ItemMachineWrapper] = cache.getAllPresent(cache.asMap.asScala.keys.asJava)
   }
 
   object Client extends Cache {
     override protected def timeout = 5
 
-    def getWeak(stack: ItemStack): Option[ItemStateWrapper] = {
+    def getWeak(stack: ItemStack): Option[ItemMachineWrapper] = {
       val key = getId(stack)
       if (key.nonEmpty) {
         val map = cache.asMap
@@ -193,7 +193,7 @@ object ItemStateManager {
       None
     }
 
-    def get(stack: ItemStack): Option[ItemStateWrapper] = {
+    def get(stack: ItemStack): Option[ItemMachineWrapper] = {
       val id = getId(stack)
       if (id.nonEmpty) cache.synchronized(Option(cache.getIfPresent(id)))
       else None

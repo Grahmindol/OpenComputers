@@ -3,15 +3,15 @@ package li.cil.oc.common.armor
 import li.cil.oc._
 import li.cil.oc.api.Driver
 import li.cil.oc.api.driver.item.Container
-import li.cil.oc.common.{ItemStateWrapper, Slot, Tier}
+import li.cil.oc.common.armor.{Armor => ArmorComponent}
+import li.cil.oc.common.{ItemMachineWrapper, Slot, Tier}
 import li.cil.oc.integration.opencomputers.DriverScreen
-import li.cil.oc.server.component.{Armor => ArmorComponent}
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.Level
 
-class ArmorWrapper(player: Player) extends ItemStateWrapper(player.getItemBySlot(EquipmentSlot.CHEST), player) {
+class ArmorWrapper(player: Player) extends ItemMachineWrapper(player.getItemBySlot(EquipmentSlot.CHEST), player) {
 
   val data = new ArmorData()
   var checksum: String = ""

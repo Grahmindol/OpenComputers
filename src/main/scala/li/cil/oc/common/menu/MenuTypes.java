@@ -1,13 +1,10 @@
 package li.cil.oc.common.menu;
 
 import li.cil.oc.OpenComputers;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -187,7 +184,7 @@ public final class MenuTypes {
         });
     }
 
-    public static void openTabletGui(ServerPlayer player, li.cil.oc.common.ItemStateWrapper wrapper) {
+    public static void openTabletGui(ServerPlayer player, li.cil.oc.common.ItemMachineWrapper wrapper) {
         player.openMenu(wrapper, buff -> {
             ItemStack.STREAM_CODEC.encode(buff, wrapper.stack());
             buff.writeVarInt(wrapper.getContainerSize());

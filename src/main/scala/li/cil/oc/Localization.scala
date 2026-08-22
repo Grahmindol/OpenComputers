@@ -65,6 +65,8 @@ object Localization {
 
     def InsertRAM: Component = localizeLater("gui.Assembler.InsertRAM")
 
+    def InsertTrim: Component = localizeLater("gui.Assembler.InsertTrim")
+
     def Complexity(complexity: Int, maxComplexity: Int): Component = {
       val message = localizeLater("gui.Assembler.Complexity", complexity.toString, maxComplexity.toString)
       if (complexity > maxComplexity) Component.literal("§4").append(message)

@@ -1,6 +1,6 @@
 package li.cil.oc.common.menu
 
-import li.cil.oc.common.ItemStateWrapper
+import li.cil.oc.common.ItemMachineWrapper
 import li.cil.oc.integration.opencomputers.DriverScreen
 import net.minecraft.world.Container
 import net.minecraft.world.entity.player.{Inventory, Player}
@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack
 class Tablet( id: Int, playerInventory: Inventory, val stack: ItemStack, tablet: Container, slot1: String, tier1: Int)
   extends AbstractMenu(MenuTypes.TABLET.get(), id, playerInventory, tablet) {
 
-  override protected def getHostClass = classOf[ItemStateWrapper]
+  override protected def getHostClass = classOf[ItemMachineWrapper]
 
   addSlot(new StaticComponentSlot(this, otherInventory, otherInventory.getContainerSize - 1, 90, 35, getHostClass, slot1, tier1) {
     override def mayPlace(stack: ItemStack): Boolean = {
@@ -22,7 +22,7 @@ class Tablet( id: Int, playerInventory: Inventory, val stack: ItemStack, tablet:
   addPlayerInventorySlots(8, 84)
 
   private val runningData = tablet match {
-    case wrapper: ItemStateWrapper =>
+    case wrapper: ItemMachineWrapper =>
       addDataSlot(new DataSlot {
         override def get(): Int = if (wrapper.machine.isRunning) 1 else 0
 
