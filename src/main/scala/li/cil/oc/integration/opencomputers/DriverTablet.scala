@@ -1,9 +1,9 @@
 package li.cil.oc.integration.opencomputers
 
-import li.cil.oc.{Constants, Settings, api}
 import li.cil.oc.api.network.{Component, EnvironmentHost, ManagedEnvironment, Visibility}
 import li.cil.oc.common.item.data.TabletData
 import li.cil.oc.common.{ItemMachineManager, Slot}
+import li.cil.oc.{Constants, Settings, api}
 import net.minecraft.nbt.{CompoundTag, Tag}
 import net.minecraft.world.item.ItemStack
 

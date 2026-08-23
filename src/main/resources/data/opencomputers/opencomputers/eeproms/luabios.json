@@ -1,0 +1,5 @@
+{
+  "label": "EEPROM (Lua BIOS)",
+  "code": "bios.lua",
+  "readonly": false
+}

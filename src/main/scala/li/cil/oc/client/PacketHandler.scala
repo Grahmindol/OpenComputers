@@ -436,7 +436,7 @@ object PacketHandler extends CommonPacketHandler {
   }
 
   def onLootDisksReset(p: PacketParser): Unit = {
-    Loot.disksForClient.clear()
+    Loot.resetDisksForClient()
     Loot.disksForCyclingClient.clear()
   }
 

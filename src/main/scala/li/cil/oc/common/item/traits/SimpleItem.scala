@@ -7,14 +7,14 @@ import li.cil.oc.api.internal.Robot
 import li.cil.oc.client.renderer.item.ItemUpgradeRenderer
 import li.cil.oc.common.blockentity
 import li.cil.oc.common.datacomponents.OCComponents
-import li.cil.oc.util.ExtendedDataComponentHolder._
+import li.cil.oc.util.ExtendedDataComponentHolder.convert
 import li.cil.oc.util.Tooltip
 import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.core.BlockPos
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.item.{Item, ItemStack, TooltipFlag}
 import net.minecraft.world.item.Item.TooltipContext
+import net.minecraft.world.item.{Item, ItemStack, TooltipFlag}
 import net.minecraft.world.level.LevelReader
 import net.neoforged.api.distmarker.{Dist, OnlyIn}
 import net.neoforged.neoforge.common.extensions.IItemExtension

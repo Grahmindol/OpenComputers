@@ -2,6 +2,7 @@ package li.cil.oc.server.command
 
 import com.mojang.brigadier.CommandDispatcher
 import li.cil.oc.{Constants, api}
+import li.cil.oc.common.Loot
 import li.cil.oc.common.blockentity.{Case => CaseBlockEntity}
 import li.cil.oc.common.blockentity.traits.Rotatable
 import li.cil.oc.server.machine.luac.LuaStateFactory
@@ -83,7 +84,7 @@ object SpawnComputerCommand {
               api.Items.get(Constants.ItemName.RAMTier6).createItemStack(1),
               api.Items.get(Constants.ItemName.RAMTier6).createItemStack(1),
               api.Items.get(Constants.ItemName.HDDTier3).createItemStack(1),
-              api.Items.get(Constants.ItemName.LuaBios).createItemStack(1),
+              Loot.defaultEEPROM,
               api.Items.get(Constants.ItemName.OpenOS).createItemStack(1)
             )
 
