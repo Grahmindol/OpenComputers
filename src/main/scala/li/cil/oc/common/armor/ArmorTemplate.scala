@@ -4,6 +4,7 @@ import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.{ImmutableItemStack, internal}
 import li.cil.oc.common.datacomponents.OCComponents
 import li.cil.oc.common.item.data.TabletData
+import li.cil.oc.common.template.TabletTemplate.complexity
 import li.cil.oc.common.template.Template
 import li.cil.oc.common.{Slot, Tier}
 import li.cil.oc.{Constants, Localization, Settings, api}
@@ -96,15 +97,22 @@ object ArmorTemplate extends Template {
   def assemble(inventory: Container): Array[AnyRef] = {
     val registries = ServerLifecycleHooks.getCurrentServer.registryAccess()
     val items = (1 until inventory.getContainerSize).map(slot => inventory.getItem(slot))
+
+
+    val data = new ArmorData()
+    data.container = items.headOption.getOrElse(ItemStack.EMPTY)
+    data.items = items.filter(!_.isEmpty).toArray
+    data.energy = Settings.get.bufferTablet
+    data.maxEnergy = data.energy
+
     val stack = inventory.getItem(0)
 
-    stack.set(OCComponents.CONTENTS, items.map(ImmutableItemStack.copyOf).toList)
 
     val optional = TrimPatterns.getFromTemplate(registries, inventory.getItem(13))
     val optional1 = registries.lookupOrThrow(Registries.TRIM_MATERIAL).get(TrimMaterials.REDSTONE)
     if (optional.isPresent && optional1.isPresent) stack.set(DataComponents.TRIM, new ArmorTrim(optional1.get, optional.get))
 
-    stack.set(DataComponents.CUSTOM_NAME, Component.literal("Upgraded Trim"))
+    data.saveData(stack)
     val energy = Settings.get.tabletBaseCost + complexity(inventory) * Settings.get.tabletComplexityCost
 
     Array(stack, Double.box(energy))
