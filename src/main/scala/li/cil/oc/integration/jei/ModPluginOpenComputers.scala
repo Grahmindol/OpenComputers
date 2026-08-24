@@ -1,10 +1,10 @@
 package li.cil.oc.integration.jei
 
-import li.cil.oc.{Constants, OpenComputers}
-import li.cil.oc.api.Items
-import li.cil.oc.common.Loot
+import li.cil.oc.OpenComputers
 import li.cil.oc.client.gui.Relay
+import li.cil.oc.common.Loot
 import li.cil.oc.common.datacomponents.OCComponents
+import li.cil.oc.common.init.{OCBlocks, OCItems}
 import li.cil.oc.integration.util.ItemSearch
 import li.cil.oc.util.StackOption
 import mezz.jei.api.{IModPlugin, JeiPlugin}
@@ -14,7 +14,7 @@ import mezz.jei.api.registration.{IAdvancedRegistration, IGuiHandlerRegistration
 import mezz.jei.api.runtime.IJeiRuntime
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.world.item.{Item, ItemStack}
+import net.minecraft.world.item.ItemStack
 
 @JeiPlugin
 class ModPluginOpenComputers extends IModPlugin {
@@ -57,35 +57,29 @@ class ModPluginOpenComputers extends IModPlugin {
   }
 
   override def registerItemSubtypes(subtypeRegistry: ISubtypeRegistration): Unit = {
-    def itemFor(name: String): Item = {
-      val info = Items.get(name)
-      Option(info.item).getOrElse(if (info.block != null) info.block.asItem() else null)
-    }
-
     val componentInterpreter = new ISubtypeInterpreter[ItemStack] {
       override def getSubtypeData(stack: ItemStack, ctx: UidContext): Object = stack.getComponentsPatch
+
       override def getLegacyStringSubtypeInfo(stack: ItemStack, ctx: UidContext): String = ""
     }
 
     Seq(
-      Constants.BlockName.Microcontroller,
-      Constants.BlockName.Robot,
-      Constants.ItemName.EEPROM,
-      Constants.ItemName.Drone,
-      Constants.ItemName.Tablet
-    ).map(itemFor).filter(_ != null).distinct.foreach(subtypeRegistry.registerSubtypeInterpreter(_, componentInterpreter))
+      OCBlocks.Microcontroller.asItem(),
+      OCBlocks.Robot.asItem(),
+      OCItems.EEPROM.asItem(),
+      OCItems.Drone.asItem(),
+      OCItems.Tablet.asItem()
+    ).foreach(subtypeRegistry.registerSubtypeInterpreter(_, componentInterpreter))
 
-    val floppy = itemFor(Constants.ItemName.Floppy)
-    if (floppy != null) {
-      subtypeRegistry.registerSubtypeInterpreter(floppy, new ISubtypeInterpreter[ItemStack] {
-        override def getSubtypeData(stack: ItemStack, ctx: UidContext): Object = {
-          if (stack.has(OCComponents.LOOT_DISK.get())) stack.get(OCComponents.LOOT_DISK.get()) else null
-        }
-        override def getLegacyStringSubtypeInfo(stack: ItemStack, ctx: UidContext): String = {
-          val data = getSubtypeData(stack, ctx)
-          if (data == null) "" else data.toString
-        }
-      })
-    }
+    subtypeRegistry.registerSubtypeInterpreter(OCItems.Floppy.asItem(), new ISubtypeInterpreter[ItemStack] {
+      override def getSubtypeData(stack: ItemStack, ctx: UidContext): Object = {
+        stack.get(OCComponents.LOOT_DISK.get())
+      }
+
+      override def getLegacyStringSubtypeInfo(stack: ItemStack, ctx: UidContext): String = {
+        val data = getSubtypeData(stack, ctx)
+        if (data == null) "" else data.toString
+      }
+    })
   }
 }

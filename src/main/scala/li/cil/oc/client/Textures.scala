@@ -145,8 +145,6 @@ object Textures {
     val ScreenUpIndicator = L("overlay/screen_up_indicator")
     val SwitchSideOn = L("overlay/switch_side_on")
     val TransposerOn = L("overlay/transposer_on")
-    val Cable = L("cable")
-    val CableCap = L("cablecap")
     val GenericTop = L("generic_top")
     val NetSplitterSide = L("netsplitter_side")
     val NetSplitterTop = L("netsplitter_top")

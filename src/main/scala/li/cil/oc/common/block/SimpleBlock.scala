@@ -10,20 +10,19 @@ import net.minecraft.network.chat.Component
 import net.minecraft.world.{InteractionHand, InteractionResult, ItemInteractionResult}
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.{Player => PlayerEntity}
+import net.minecraft.world.item.{ItemStack, TooltipFlag}
 import net.minecraft.world.item.Item.TooltipContext
-import net.minecraft.world.item.{ItemStack, TooltipFlag => ITooltipFlag}
 import net.minecraft.world.item.context.BlockPlaceContext
+import net.minecraft.world.level.{BlockGetter, Level => World}
 import net.minecraft.world.level.block.{Mirror, Rotation, BaseEntityBlock => ContainerBlock, RenderShape => BlockRenderType}
 import net.minecraft.world.level.block.entity.{BlockEntity => TileEntity}
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.storage.loot.LootParams
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams
-import net.minecraft.world.level.{BlockGetter, Level => World}
 import net.minecraft.world.phys.BlockHitResult
 
 import java.util
-import scala.jdk.CollectionConverters._
 
 abstract class SimpleBlock(props: Properties) extends ContainerBlock(props) {
   override protected def codec(): com.mojang.serialization.MapCodec[_ <: SimpleBlock] = com.mojang.serialization.MapCodec.unit(this)
@@ -49,22 +48,20 @@ abstract class SimpleBlock(props: Properties) extends ContainerBlock(props) {
   // BlockItem
   // ----------------------------------------------------------------------- //
 
-  override def appendHoverText(stack: ItemStack, context: TooltipContext, tooltip: util.List[Component], flag: ITooltipFlag): Unit = {
+  override def appendHoverText(stack: ItemStack, context: TooltipContext, tooltip: util.List[Component], flag: TooltipFlag): Unit = {
     tooltipHead(stack, context, tooltip, flag)
     tooltipBody(stack, context, tooltip, flag)
     tooltipTail(stack, context, tooltip, flag)
   }
 
-  protected def tooltipHead(stack: ItemStack, context: TooltipContext, tooltip: util.List[Component], flag: ITooltipFlag): Unit = {
+  protected def tooltipHead(stack: ItemStack, context: TooltipContext, tooltip: util.List[Component], flag: TooltipFlag): Unit = {
   }
 
-  protected def tooltipBody(stack: ItemStack, context: TooltipContext, tooltip: util.List[Component], flag: ITooltipFlag): Unit = {
-    for (curr <- Tooltip.get(getClass.getSimpleName.toLowerCase).asScala) {
-      tooltip.add(Component.literal(curr).setStyle(Tooltip.DefaultStyle))
-    }
+  protected def tooltipBody(stack: ItemStack, context: TooltipContext, tooltip: util.List[Component], flag: TooltipFlag): Unit = {
+    Tooltip.add(tooltip, flag, getClass.getSimpleName.toLowerCase)
   }
 
-  protected def tooltipTail(stack: ItemStack, context: TooltipContext, tooltip: util.List[Component], flag: ITooltipFlag): Unit = {
+  protected def tooltipTail(stack: ItemStack, context: TooltipContext, tooltip: util.List[Component], flag: TooltipFlag): Unit = {
   }
 
   // ----------------------------------------------------------------------- //
@@ -130,7 +127,7 @@ abstract class SimpleBlock(props: Properties) extends ContainerBlock(props) {
     }
     result
   }
-  
+
   def getValidRotations(world: World, pos: BlockPos): Array[Direction] = validRotations_
 
   override def getDrops(state: BlockState, ctx: LootParams.Builder): util.List[ItemStack] = {

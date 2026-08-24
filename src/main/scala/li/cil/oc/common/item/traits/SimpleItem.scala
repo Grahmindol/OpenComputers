@@ -50,21 +50,17 @@ trait SimpleItem extends Item with api.driver.item.UpgradeRenderer with IItemExt
 
   override def appendHoverText(stack: ItemStack, context: TooltipContext, tooltip: util.List[Component], flag: TooltipFlag): Unit = {
     if (tooltipName.isDefined) {
-      for (curr <- Tooltip.get(tooltipName.get, tooltipData: _*)) {
-        tooltip.add(Component.literal(curr).setStyle(Tooltip.DefaultStyle))
-      }
-      tooltipExtended(stack, tooltip)
+      Tooltip.add(tooltip, flag, tooltipName.get, tooltipData: _*)
+      tooltipExtended(stack, tooltip, flag)
     }
     else {
-      for (curr <- Tooltip.get(getClass.getSimpleName.toLowerCase)) {
-        tooltip.add(Component.literal(curr).setStyle(Tooltip.DefaultStyle))
-      }
+      Tooltip.add(tooltip, flag, getClass.getSimpleName.toLowerCase)
     }
     tooltipCosts(stack, tooltip)
   }
 
   // For stuff that goes to the normal 'extended' tooltip, before the costs.
-  protected def tooltipExtended(stack: ItemStack, tooltip: java.util.List[Component]): Unit = {}
+  protected def tooltipExtended(stack: ItemStack, tooltip: util.List[Component], flag: TooltipFlag): Unit = {}
 
   protected def tooltipCosts(stack: ItemStack, tooltip: java.util.List[Component]): Unit = {
     stack.getComponent(OCComponents.ADDRESS).foreach { address =>

@@ -35,13 +35,14 @@ trait InputBuffer extends DisplayBuffer {
   private var hasQueuedKey = false
   private var queuedKey = 0
   private var queuedChar = '\u0000'
+  private var queuedCharMods = 0
   private var highSurrogate = '\u0000'
 
-  protected def pushQueuedKey(keyCode: Int): Unit = {
+  protected def pushQueuedKey(keyCode: Int, mods: Int): Unit = {
     flushQueuedKey()
     hasQueuedKey = true
     queuedKey = keyCode
-    queuedChar = GLFWTranslator.keyToChar(keyCode)
+    queuedChar = GLFWTranslator.keyToChar(keyCode, mods)
   }
 
   protected def pushQueuedChar(char: Char): Unit = {
@@ -151,7 +152,7 @@ trait InputBuffer extends DisplayBuffer {
       }
       if (onInput(InputConstants.getKey(keyCode, scanCode))) return true
       if (buffer != null && keyCode != GLFW.GLFW_KEY_UNKNOWN) {
-        if (hasKeyboard) pushQueuedKey(keyCode)
+        if (hasKeyboard) pushQueuedKey(keyCode, mods)
         else showKeyboardMissing = System.currentTimeMillis()
         return true
       }
@@ -334,12 +335,17 @@ object GLFWTranslator {
 
   def glfwToLWJGL(keyCode: Int): Int = if (keyCode >= 0 && keyCode < toLWJGL.size) toLWJGL(keyCode) else -1
 
-  def keyToChar(keyCode: Int): Char = {
+  def keyToChar(keyCode: Int, mods: Int): Char = {
     if (keyCode == GLFW.GLFW_KEY_ESCAPE) '\u001B'
     else if (keyCode == GLFW.GLFW_KEY_ENTER) '\r'
     else if (keyCode == GLFW.GLFW_KEY_TAB) '\t'
     else if (keyCode == GLFW.GLFW_KEY_BACKSPACE) '\b'
     else if (keyCode == GLFW.GLFW_KEY_KP_ENTER) '\r'
+    else if ((mods & GLFW.GLFW_MOD_CONTROL) != 0) {
+      var c = (keyCode-64).max(0).toChar
+      if (c > 32) 0
+      else c
+    }
     else '\u0000'
   }
 }

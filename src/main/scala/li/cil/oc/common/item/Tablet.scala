@@ -3,7 +3,6 @@ package li.cil.oc.common.item
 import li.cil.oc.api.Driver
 import li.cil.oc.api.driver.item.Container
 import li.cil.oc.api.network.Node
-import li.cil.oc.client.KeyBindings
 import li.cil.oc.common.item.data.TabletData
 import li.cil.oc.common.{ItemMachineManager, ItemMachineWrapper, Slot, Tier}
 import li.cil.oc.integration.opencomputers.DriverScreen
@@ -21,28 +20,25 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.entity.{Entity, LivingEntity}
 import net.minecraft.world.item.Item.Properties
 import net.minecraft.world.item.context.UseOnContext
-import net.minecraft.world.item.{Item, ItemStack}
+import net.minecraft.world.item.{Item, ItemStack, TooltipFlag}
 import net.minecraft.world.level.Level
 import net.neoforged.api.distmarker.{Dist, OnlyIn}
 import net.neoforged.neoforge.common.extensions.IItemExtension
 
 import java.util
-import scala.collection.convert.ImplicitConversionsToScala._
 
 class Tablet(props: Properties) extends Item(props) with traits.SimpleItem with traits.Chargeable with IItemExtension {
   final val TimeToAnalyze = 10
 
   // ----------------------------------------------------------------------- //
 
-  override protected def tooltipExtended(stack: ItemStack, tooltip: util.List[Component]): Unit = {
-    if (KeyBindings.showExtendedTooltips) {
+  override protected def tooltipExtended(stack: ItemStack, tooltip: util.List[Component], flag: TooltipFlag): Unit = {
+    if (Tooltip.showExtendedTooltip(flag)) {
       val info = new TabletData(stack)
       // Ignore/hide the screen.
       val components = info.items.drop(1)
       if (components.length > 1) {
-        for (curr <- Tooltip.get("server.Components")) {
-          tooltip.add(Component.literal(curr).setStyle(Tooltip.DefaultStyle))
-        }
+        Tooltip.add(tooltip, flag, "server.Components")
         components.collect {
           case component if !component.isEmpty => tooltip.add(Component.literal("- " + component.getHoverName.getString).setStyle(Tooltip.DefaultStyle))
         }
