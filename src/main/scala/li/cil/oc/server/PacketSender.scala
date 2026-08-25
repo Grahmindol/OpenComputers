@@ -11,9 +11,9 @@ import li.cil.oc.common.datacomponents.CompoundStorage
 import li.cil.oc.common.nanomachines.ControllerImpl
 import li.cil.oc.util.{BlockPosition, PackedColor}
 import li.cil.oc.{Settings, api}
-import net.minecraft.core.{BlockPos, Direction}
 import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.{BlockPos, Direction}
 import net.minecraft.nbt.{CompoundTag, NbtIo}
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.resources.ResourceLocation
@@ -88,7 +88,7 @@ object PacketSender {
     pb.writeBoolean(loop)
     pb.sendToPlayersNearHost(host, Option(Settings.get.maxNetworkClientSoundPacketDistance))
   }
-  
+
   def sendAdapterState(t: blockentity.Adapter): Unit = {
     val pb = new SimplePacketBuilder(PacketType.AdapterState)
 
@@ -157,6 +157,12 @@ object PacketSender {
     pb.writeItemStack(stack, player.server.registryAccess())
     pb.writeBoolean(isRunning)
 
+    pb.sendToPlayer(player)
+  }
+
+  def sendMachineItemInteractionResponse(player: ServerPlayer, stack: ItemStack): Unit = {
+    val pb = new SimplePacketBuilder(PacketType.MachineItemInteractionResponse)
+    pb.writeItemStack(stack, player.server.registryAccess())
     pb.sendToPlayer(player)
   }
 

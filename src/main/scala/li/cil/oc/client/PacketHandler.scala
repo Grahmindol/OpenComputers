@@ -2,27 +2,24 @@ package li.cil.oc.client
 
 import com.mojang.blaze3d.pipeline.RenderCall
 import com.mojang.blaze3d.systems.RenderSystem
-import io.netty.buffer.{ByteBuf, Unpooled}
-import li.cil.oc.{Localization, OpenComputers, Settings, api}
+import io.netty.buffer.Unpooled
 import li.cil.oc.api.event.{FileSystemAccessEvent, NetworkActivityEvent}
 import li.cil.oc.client.audio.AudioSession
 import li.cil.oc.client.renderer.PetRenderer
 import li.cil.oc.common.blockentity._
 import li.cil.oc.common.blockentity.traits._
-import li.cil.oc.common.datacomponents.{CompoundStorage, OCComponents, ScalaStreamCodec}
-import li.cil.oc.common.item.Tablet
+import li.cil.oc.common.datacomponents.{CompoundStorage, OCComponents}
 import li.cil.oc.common.nanomachines.ControllerImpl
-import li.cil.oc.common.{Loot, PacketType, RobotFlags, component, menu, PacketHandler => CommonPacketHandler}
+import li.cil.oc.common.{ItemMachineManager, Loot, PacketType, RobotFlags, component, menu, PacketHandler => CommonPacketHandler}
 import li.cil.oc.integration.Mods
-
-import java.io.{EOFException, InputStream}
-import li.cil.oc.util.{Audio, ClientAccessHelper}
 import li.cil.oc.util.ExtendedLevel._
+import li.cil.oc.util.{Audio, ClientAccessHelper}
+import li.cil.oc.{Localization, OpenComputers, Settings, api}
 import net.minecraft.client.Minecraft
 import net.minecraft.core.Direction
 import net.minecraft.core.component.DataComponentMap
-import net.minecraft.core.registries.Registries
 import net.minecraft.core.particles.ParticleOptions
+import net.minecraft.core.registries.Registries
 import net.minecraft.nbt.{NbtIo, NbtOps}
 import net.minecraft.network.RegistryFriendlyByteBuf
 import net.minecraft.resources.ResourceLocation
@@ -33,7 +30,8 @@ import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.network.connection.ConnectionType
-import net.neoforged.neoforge.registries.NeoForgeRegistries
+
+import java.io.{EOFException, InputStream}
 
 object PacketHandler extends CommonPacketHandler {
   private val audioSessions = scala.collection.mutable.Map[Int, AudioSession]()
@@ -72,6 +70,7 @@ object PacketHandler extends CommonPacketHandler {
       case PacketType.Clipboard => onClipboard(p)
       case PacketType.ColorChange => onColorChange(p)
       case PacketType.MachineItemStateResponse => onMachineItemStateResponse(p)
+      case PacketType.MachineItemInteractionResponse => onMachineItemInteractionResponse(p)
       case PacketType.ComputerState => onComputerState(p)
       case PacketType.ComputerUserList => onComputerUserList(p)
       case PacketType.ContainerUpdate => onContainerUpdate(p)
@@ -248,10 +247,16 @@ object PacketHandler extends CommonPacketHandler {
   def onMachineItemStateResponse(p: PacketParser) : Unit = {
     val stack = p.readItemStack()
     val running = p.readBoolean()
-    val wrapper = Tablet.Client.get(stack, p.player)
 
+    val wrapper = ItemMachineManager.Client.get(stack, p.player)
     wrapper.data.isRunning = running
     wrapper.isDirty = false
+    wrapper.onInit(p.player.level(), p.player)
+  }
+
+  def onMachineItemInteractionResponse(p: PacketParser) : Unit = {
+    val stack = p.readItemStack()
+    ItemMachineManager.Client.get(stack, p.player).interact(p.player.level(), p.player)
   }
 
   def onComputerState(p: PacketParser): Unit =

@@ -1,10 +1,9 @@
 package li.cil.oc.integration.opencomputers
 
-import li.cil.oc.{api, Constants, Settings}
 import li.cil.oc.api.network.{Component, EnvironmentHost, ManagedEnvironment, Visibility}
-import li.cil.oc.common.Slot
-import li.cil.oc.common.item.Tablet
 import li.cil.oc.common.item.data.TabletData
+import li.cil.oc.common.{ItemMachineManager, Slot}
+import li.cil.oc.{Constants, Settings, api}
 import net.minecraft.nbt.{CompoundTag, Tag}
 import net.minecraft.world.item.ItemStack
 
@@ -15,7 +14,7 @@ object DriverTablet extends Item {
   override def createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment =
     if (host.getEnvironmentLevel != null && host.getEnvironmentLevel.isClientSide) null
     else {
-      Tablet.Server.cache.invalidate(Tablet.getOrCreateId(stack))
+      ItemMachineManager.Server.cache.invalidate(ItemMachineManager.getOrCreateId(stack))
       val data = new TabletData(stack)
       val index = fileSystemIndex(data)
       if (index < 0) null

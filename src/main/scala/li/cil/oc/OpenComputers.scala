@@ -82,6 +82,7 @@ class OpenComputers(modBus: IEventBus, modContainer: ModContainer) {
   NeoForge.EVENT_BUS.addListener(CommandHandler.onRegisterCommands)
   modBus.register(ColorHandler)
 
+
   Mods.preInit() // Must happen after loading Settings but before registry events are fired.
 
   @SubscribeEvent

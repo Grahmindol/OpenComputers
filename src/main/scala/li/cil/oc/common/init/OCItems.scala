@@ -1,18 +1,16 @@
 package li.cil.oc.common.init
 
-import codechicken.lib.gui.modular.lib.geometry.Position.Mutable
 import li.cil.oc.api.detail.{ItemAPI, ItemInfo}
 import li.cil.oc.api.fs.FileSystem
 import li.cil.oc.common.block.SimpleBlock
 import li.cil.oc.common.datacomponents.OCComponents
 import li.cil.oc.common.item.data._
 import li.cil.oc.common.item.traits.SimpleItem
-import li.cil.oc.common.openprinter.OpenPrinter
 import li.cil.oc.common.{Loot, Tier, item}
 import li.cil.oc.integration.opencomputers.ModOpenComputers
 import li.cil.oc.server.machine.luac.LuaStateFactory
 import li.cil.oc.util.{Rarity => OCRarity}
-import li.cil.oc.{Constants, OpenComputers, Settings, common}
+import li.cil.oc.{Constants, OpenComputers, Settings, api, common}
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.Item.Properties
@@ -26,7 +24,6 @@ import java.util
 import java.util.concurrent.Callable
 import java.util.function.Consumer
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 object OCItems extends ItemAPI {
@@ -314,7 +311,9 @@ object OCItems extends ItemAPI {
     data.items(31) = safeGetStack(Constants.ItemName.OpenOS)
     data.container = safeGetStack(Constants.BlockName.DiskDrive)
 
-    data.createItemStack()
+    val stack = api.Items.get(Constants.ItemName.Tablet).createItemStack(1)
+    data.saveData(stack)
+    stack
   }
 
   def createChargedHoverBoots(): ItemStack = {
