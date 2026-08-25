@@ -26,8 +26,8 @@ class Relay(state: menu.Relay, playerInventory: Inventory, name: Component)
     RenderSystem.setShaderColor(1, 1, 1, 1)
     RenderSystem.setShaderTexture(0, Textures.GUI.UpgradeTab)
     val stack = graphics.pose()
-    val x = windowX + tabPosition.getX
-    val y = windowY + tabPosition.getY
+    val x = getGuiLeft + tabPosition.getX
+    val y = getGuiTop + tabPosition.getY
     val w = tabPosition.getWidth
     val h = tabPosition.getHeight
     val t = Tesselator.getInstance

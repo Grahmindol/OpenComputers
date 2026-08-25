@@ -1,27 +1,22 @@
 package li.cil.oc.client.gui
 
 import com.mojang.blaze3d.systems.RenderSystem
+import com.mojang.blaze3d.vertex.{BufferUploader, DefaultVertexFormat, PoseStack, Tesselator, VertexFormat}
 import li.cil.oc.Localization
-import li.cil.oc.client.Textures
+import li.cil.oc.client.{Textures, PacketSender => ClientPacketSender}
 import li.cil.oc.client.gui.widget.ProgressBar
 import li.cil.oc.client.renderer.TextBufferRenderCache
 import li.cil.oc.client.renderer.font.TextBufferRenderData
-import li.cil.oc.client.{PacketSender => ClientPacketSender}
 import li.cil.oc.common.menu
-import li.cil.oc.util.PackedColor
-import li.cil.oc.util.RenderState
-import li.cil.oc.util.TextBuffer
-import net.minecraft.world.entity.player.Inventory
-import net.minecraft.network.chat.Component
-import com.mojang.blaze3d.vertex.{BufferUploader, DefaultVertexFormat, PoseStack, Tesselator, VertexFormat}
-import net.minecraft.client.gui.components.Button
+import li.cil.oc.util.{PackedColor, RenderState, TextBuffer}
+import net.minecraft.client.gui.components.{Button, Tooltip}
 import net.minecraft.client.gui.GuiGraphics
-
-import scala.jdk.javaapi.CollectionConverters.asJavaCollection
+import net.minecraft.network.chat.Component
+import net.minecraft.world.entity.player.Inventory
 
 class Drone(state: menu.Drone, playerInventory: Inventory, name: Component)
   extends DynamicGuiContainer(state, playerInventory, name)
-  with traits.DisplayBuffer {
+    with traits.DisplayBuffer {
 
   imageWidth = 176
   imageHeight = 148
@@ -49,25 +44,36 @@ class Drone(state: menu.Drone, playerInventory: Inventory, name: Component)
   private val inventoryX = 97
   private val inventoryY = 7
 
-  private val power = addCustomWidget(new ProgressBar(28, 48))
+  private var power: ProgressBar = _
 
   private val selectionSize = 20
   private val selectionsStates = 17
   private val selectionStepV = 1 / selectionsStates.toFloat
 
+  override protected def init(): Unit = {
+    super.init()
+    powerButton = addRenderableWidget(new ImageButton(leftPos + 7, topPos + 45, 18, 18, (_: Button) =>
+      ClientPacketSender.sendDronePower(inventoryContainer, !inventoryContainer.isRunning), Textures.GUI.ButtonPower, canToggle = true))
+    power = addRenderableWidget(new ProgressBar(leftPos + 28,topPos + 48))
+  }
+
   override def render(graphics: GuiGraphics, mouseX: Int, mouseY: Int, dt: Float): Unit = {
+    val format = Localization.Computer.Power + ": %d%% (%d/%d)"
+    power.level = inventoryContainer.globalBuffer.toFloat / math.max(inventoryContainer.globalBufferSize.toFloat, 1.0f)
+    power.setTooltip(Tooltip.create(Component.literal(format.format(
+      inventoryContainer.globalBuffer * 100 / math.max(inventoryContainer.globalBufferSize, 1),
+      inventoryContainer.globalBuffer, inventoryContainer.globalBufferSize))))
+
     powerButton.toggled = inventoryContainer.isRunning
+    powerButton.setTooltip(Tooltip.create(Component.literal(
+      if (inventoryContainer.isRunning) Localization.Computer.TurnOff else Localization.Computer.TurnOn
+    )))
+
     bufferRenderer.dirty = inventoryContainer.statusText.getString.linesIterator.zipWithIndex.exists {
       case (line, i) => buffer.set(0, i, line, vertical = false)
     }
-    super.render(graphics, mouseX, mouseY, dt)
-  }
 
-  override protected def init(): Unit = {
-    super.init()
-    powerButton = new ImageButton(leftPos + 7, topPos + 45, 18, 18, (_: Button) =>
-      ClientPacketSender.sendDronePower(inventoryContainer, !inventoryContainer.isRunning), Textures.GUI.ButtonPower, canToggle = true)
-    addRenderableWidget(powerButton)
+    super.render(graphics, mouseX, mouseY, dt)
   }
 
   override protected def drawBuffer(stack: PoseStack): Unit = {
@@ -86,26 +92,10 @@ class Drone(state: menu.Drone, playerInventory: Inventory, name: Component)
 
   override protected def drawSecondaryForegroundLayer(graphics: GuiGraphics, mouseX: Int, mouseY: Int): Unit = {
     drawBufferLayer(graphics.pose)
-    if (isHovering(power.x, power.y, power.width, power.height, mouseX - leftPos, mouseY - topPos)) {
-      val tooltip = new java.util.ArrayList[Component]
-      val format = Localization.Computer.Power + ": %d%% (%d/%d)"
-      tooltip.add(Component.literal(format.format(
-        inventoryContainer.globalBuffer * 100 / math.max(inventoryContainer.globalBufferSize, 1),
-        inventoryContainer.globalBuffer, inventoryContainer.globalBufferSize)))
-      graphics.renderComponentTooltip(font, tooltip, mouseX - leftPos, mouseY - topPos)
-    }
-    if (powerButton.isMouseOver(mouseX, mouseY)) {
-      val tooltip = new java.util.ArrayList[Component]
-      tooltip.addAll(asJavaCollection(if (inventoryContainer.isRunning) Localization.Computer.TurnOff.linesIterator.map(Component.literal).toSeq else Localization.Computer.TurnOn.linesIterator.map(Component.literal).toSeq))
-      graphics.renderComponentTooltip(font, tooltip, mouseX - leftPos, mouseY - topPos)
-    }
   }
 
   override protected def renderBg(graphics: GuiGraphics, dt: Float, mouseX: Int, mouseY: Int): Unit = {
-    RenderSystem.setShaderColor(1, 1, 1, 1)
     graphics.blit(Textures.GUI.Drone, leftPos, topPos, 0, 0, imageWidth, imageHeight)
-    power.level = inventoryContainer.globalBuffer.toFloat / math.max(inventoryContainer.globalBufferSize.toFloat, 1.0f)
-    drawWidgets(graphics)
     if (inventoryContainer.otherInventory.getContainerSize > 0) {
       drawSelection(graphics)
     }

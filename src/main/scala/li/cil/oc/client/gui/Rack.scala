@@ -9,7 +9,7 @@ import li.cil.oc.client.{Textures, PacketSender => ClientPacketSender}
 import li.cil.oc.common.menu
 import li.cil.oc.util.RenderState
 import net.minecraft.client.gui.GuiGraphics
-import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.components.{Button, Tooltip}
 import net.minecraft.client.renderer.GameRenderer
 import net.minecraft.core.Direction
 import net.minecraft.network.chat.Component
@@ -114,6 +114,7 @@ class Rack(state: menu.Rack, playerInventory: Inventory, name: Component)
       Textures.GUI.ButtonRelay,
       Component.literal(Localization.Rack.RelayDisabled),
       textIndent = 18)
+    relayButton.setTooltip(Tooltip.create(Component.literal(Localization.Rack.RelayModeTooltip)))
     addRenderableWidget(relayButton)
 
     val (mw, mh) = hoverMasterSize
@@ -222,12 +223,6 @@ class Rack(state: menu.Rack, playerInventory: Inventory, name: Component)
     if (mouseX >= leftPos + 122 && mouseY >= topPos + 20 && mouseX < leftPos + 158 && mouseY < topPos + 20 + 5 * 11) {
       val tooltip = new java.util.ArrayList[Component]
       tooltip.addAll(Localization.Rack.OrientationTooltip.linesIterator.map(Component.literal).toList.asJava)
-      graphics.renderComponentTooltip(font, tooltip, mouseX - leftPos, mouseY - topPos)
-    }
-
-    if (relayButton.isMouseOver(mouseX, mouseY)) {
-      val tooltip = new java.util.ArrayList[Component]
-      tooltip.addAll(Localization.Rack.RelayModeTooltip.linesIterator.map(Component.literal).toList.asJava)
       graphics.renderComponentTooltip(font, tooltip, mouseX - leftPos, mouseY - topPos)
     }
   }

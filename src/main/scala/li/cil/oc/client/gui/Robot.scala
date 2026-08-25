@@ -4,23 +4,22 @@ import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.{BufferUploader, DefaultVertexFormat, PoseStack, Tesselator, VertexFormat}
 import li.cil.oc.{Localization, Settings}
 import li.cil.oc.api.internal.TextBuffer
+import li.cil.oc.client.{ComponentTracker, Textures, PacketSender => ClientPacketSender}
 import li.cil.oc.client.gui.widget.ProgressBar
 import li.cil.oc.client.renderer.TextBufferRenderCache
 import li.cil.oc.client.renderer.gui.BufferRenderer
-import li.cil.oc.client.{ComponentTracker, Textures, PacketSender => ClientPacketSender}
 import li.cil.oc.common.menu
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphics
-import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.components.events.ContainerEventHandler
 import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Inventory
 import org.lwjgl.glfw.GLFW
-import scala.jdk.CollectionConverters._
 
 class Robot(state: menu.Robot, playerInventory: Inventory, name: Component)
   extends DynamicGuiContainer(state, playerInventory, name)
-  with traits.InputBuffer with ContainerEventHandler {
+    with traits.InputBuffer with ContainerEventHandler {
 
   override def containerTick(): Unit = {
     super.containerTick()
@@ -75,32 +74,48 @@ class Robot(state: menu.Robot, playerInventory: Inventory, name: Component)
   private val scrollWidth = 8
   private val scrollHeight = 92
 
-  private val power = addCustomWidget(new ProgressBar(26, 156 - deltaY))
+  private var power: ProgressBar = _
 
   private val selectionSize = 20
   private val selectionsStates = 17
   private val selectionStepV = 1 / selectionsStates.toFloat
 
+  override protected def init(): Unit = {
+    super.init()
+    powerButton = addRenderableWidget(new ImageButton(
+      leftPos + 5, topPos + 153 - deltaY, 18, 18,
+      _ => ClientPacketSender.sendRobotPower(inventoryContainer, !inventoryContainer.isRunning),
+      Textures.GUI.ButtonPower,
+      canToggle = true
+    ))
+    scrollButton = addRenderableWidget(new ImageButton(leftPos + scrollX + 1, topPos + scrollY + 1, 6, 13, _ => (), Textures.GUI.ButtonScroll))
+    power = addRenderableWidget(new ProgressBar(leftPos + 26, topPos + 156 - deltaY))
+  }
+
   override def render(graphics: GuiGraphics, mouseX: Int, mouseY: Int, dt: Float): Unit = {
     powerButton.toggled = inventoryContainer.isRunning
+    powerButton.setTooltip(Tooltip.create(Component.literal(
+      if (inventoryContainer.isRunning) Localization.Computer.TurnOff else Localization.Computer.TurnOn
+    )))
+
+    if (inventoryContainer.globalBufferSize == 0) {
+      power.level = 0
+      power.setTooltip(null)
+    } else {
+      power.level = inventoryContainer.globalBuffer.toDouble / inventoryContainer.globalBufferSize
+      val format = Localization.Computer.Power + ": %d%% (%d/%d)"
+      power.setTooltip(Tooltip.create(Component.literal(format.format(
+        100 * inventoryContainer.globalBuffer / inventoryContainer.globalBufferSize,
+        inventoryContainer.globalBuffer, inventoryContainer.globalBufferSize
+      ))))
+    }
+
     scrollButton.active = canScroll
     scrollButton.hoverOverride = isScrolling
     if (inventoryContainer.info.mainInvSize < 16 + inventoryOffset * 4) {
       if (inventoryOffset != 0) scrollTo(0)
     }
     super.render(graphics, mouseX, mouseY, dt)
-  }
-
-  override protected def init(): Unit = {
-    super.init()
-    powerButton = new ImageButton(leftPos + 5, topPos + 153 - deltaY, 18, 18, new Button.OnPress {
-      override def onPress(b: Button) = ClientPacketSender.sendRobotPower(inventoryContainer, !inventoryContainer.isRunning)
-    }, Textures.GUI.ButtonPower, canToggle = true)
-    scrollButton = new ImageButton(leftPos + scrollX + 1, topPos + scrollY + 1, 6, 13, new Button.OnPress {
-      override def onPress(b: Button) = ()
-    }, Textures.GUI.ButtonScroll)
-    addRenderableWidget(powerButton)
-    addRenderableWidget(scrollButton)
   }
 
   override def drawBuffer(stack: PoseStack): Unit = {
@@ -135,31 +150,11 @@ class Robot(state: menu.Robot, playerInventory: Inventory, name: Component)
 
   override protected def drawSecondaryForegroundLayer(graphics: GuiGraphics, mouseX: Int, mouseY: Int): Unit = {
     drawBufferLayer(graphics.pose())
-    if (isHovering(power.x, power.y, power.width, power.height, mouseX - leftPos, mouseY - topPos)) {
-      val tooltip = new java.util.ArrayList[Component]
-      val format = Localization.Computer.Power + ": %d%% (%d/%d)"
-      tooltip.add(Component.literal(format.format(
-        100 * inventoryContainer.globalBuffer / inventoryContainer.globalBufferSize,
-        inventoryContainer.globalBuffer, inventoryContainer.globalBufferSize)))
-      graphics.renderComponentTooltip(font, tooltip, mouseX, mouseY)
-    }
-    if (powerButton.isMouseOver(mouseX, mouseY)) {
-      val tooltip = new java.util.ArrayList[Component]
-      tooltip.addAll(
-        if (inventoryContainer.isRunning)
-          Localization.Computer.TurnOff.linesIterator.map(Component.literal).toList.asJava
-        else
-          Localization.Computer.TurnOn.linesIterator.map(Component.literal).toList.asJava
-      )
-      graphics.renderComponentTooltip(font, tooltip, mouseX, mouseY)
-    }
   }
 
   override protected def renderBg(graphics: GuiGraphics, dt: Float, mouseX: Int, mouseY: Int): Unit = {
-    RenderSystem.setShaderColor(1, 1, 1, 1)
     graphics.blit(if (buffer != null) Textures.GUI.Robot else Textures.GUI.RobotNoScreen, leftPos, topPos, 0, 0, imageWidth, imageHeight)
-    power.level = inventoryContainer.globalBuffer.toDouble / inventoryContainer.globalBufferSize
-    drawWidgets(graphics)
+
     if (inventoryContainer.info.mainInvSize > 0) {
       drawSelection(graphics.pose)
     }
