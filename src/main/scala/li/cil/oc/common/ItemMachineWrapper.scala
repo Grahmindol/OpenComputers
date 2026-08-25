@@ -1,19 +1,19 @@
 package li.cil.oc.common
 
-import li.cil.oc.api.Machine
+import li.cil.oc._
+import li.cil.oc.api.driver.item.Container
 import li.cil.oc.api.machine.MachineHost
-import li.cil.oc.api.network.{Connector, Message, Node}
+import li.cil.oc.api.network.{Connector, Message, Node, Visibility}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
+import li.cil.oc.api.{Driver, Machine, Network}
 import li.cil.oc.client.gui
 import li.cil.oc.common.container.ComponentInventory
-import li.cil.oc._
-import li.cil.oc.common.item.data.{ItemStateData, TabletData}
+import li.cil.oc.common.item.data.ItemMachineData
 import li.cil.oc.common.menu.MenuTypes
-import li.cil.oc.server.PacketSender
 import li.cil.oc.util.RotationHelper
 import net.minecraft.client.Minecraft
-import net.minecraft.core.{Direction, HolderLookup}
 import net.minecraft.core.component.DataComponentHolder
+import net.minecraft.core.{Direction, HolderLookup}
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.MenuProvider
 import net.minecraft.world.entity.player.{Inventory, Player}
@@ -29,13 +29,16 @@ abstract class ItemMachineWrapper(var stack: ItemStack, var player: Player ) ext
   // kept the same and components are not required to properly handle level changes.
   val getEnvironmentLevel: Level = player.level
 
-  val data: ItemStateData
+  val data: ItemMachineData
   lazy val machine: api.machine.Machine = if (getEnvironmentLevel.isClientSide) null else Machine.create(this)
 
-  def isCreative: Boolean
+  def isCreative: Boolean = false
 
   // TabletComponent for tablet....
   val internalComponent: AbstractManagedEnvironment
+
+  // used to get data about energy
+  private val internalConnector: Connector = Network.newNode(this, Visibility.Network).withConnector().create()
 
   //// Client side only
   var isInitialized: Boolean = false
@@ -51,12 +54,13 @@ abstract class ItemMachineWrapper(var stack: ItemStack, var player: Player ) ext
   var autoSave = true
 
 
-  def items: Array[ItemStack]
+  override def items: Array[ItemStack] = data.items
 
 
   def readFromNBT(provider: HolderLookup.Provider): Unit = {
     loadData(stack)
     if (!getEnvironmentLevel.isClientSide) {
+      internalConnector.loadData(stack)
       internalComponent.loadData(stack)
       machine.loadData(stack)
     }
@@ -65,6 +69,7 @@ abstract class ItemMachineWrapper(var stack: ItemStack, var player: Player ) ext
   def writeToNBT(provider: HolderLookup.Provider): Unit = {
     saveData(stack)
     if (!getEnvironmentLevel.isClientSide) {
+      internalConnector.saveData(stack)
       internalComponent.saveData(stack)
       machine.saveData(stack)
     }
@@ -88,12 +93,9 @@ abstract class ItemMachineWrapper(var stack: ItemStack, var player: Player ) ext
   override def onConnect(node: Node): Unit = {
     if (node == this.node) {
       connectComponents()
+      node.connect(internalConnector)
       node.connect(internalComponent.node)
-
-      if(!isInitialized) {
-        server.PacketSender.sendMachineItemState(player.asInstanceOf[ServerPlayer], stack, machine.isRunning)
-        isInitialized = true
-      }
+      isInitialized = true
     }
   }
 
@@ -114,6 +116,7 @@ abstract class ItemMachineWrapper(var stack: ItemStack, var player: Player ) ext
     if (node == this.node) {
       disconnectComponents()
       internalComponent.node.remove()
+      internalConnector.remove()
     }
   }
 
@@ -140,9 +143,30 @@ abstract class ItemMachineWrapper(var stack: ItemStack, var player: Player ) ext
 
   // ----------------------------------------------------------------------- //
 
-  def containerSlotType: String
+  def containerSlotType: String =
+    if (data.container.isEmpty) Slot.None
+    else Option(Driver.driverFor(data.container, getClass)) match {
+      case Some(driver: Container) => driver.providedSlot(data.container)
+      case _ => Slot.None
+    }
 
-  def containerSlotTier: Int
+  def containerSlotTier: Int =
+    if (data.container.isEmpty) Tier.None
+    else Option(Driver.driverFor(data.container, getClass)) match {
+      case Some(driver: Container) => driver.providedTier(data.container)
+      case _ => Tier.None
+    }
+
+
+  override def canPlaceItem(slot: Int, stack: ItemStack): Boolean =
+    slot == getContainerSize - 1 &&
+      (Option(Driver.driverFor(stack, getClass)) match {
+        case Some(driver) =>
+            driver.slot(stack) == containerSlotType &&
+            driver.tier(stack) <= containerSlotTier
+        case _ =>
+          false
+      })
 
   override def internalComponents(): java.lang.Iterable[ItemStack] = (0 until getContainerSize).collect {
     case slot if !getItem(slot).isEmpty && isComponentSlot(slot, getItem(slot)) => getItem(slot)
@@ -162,7 +186,8 @@ abstract class ItemMachineWrapper(var stack: ItemStack, var player: Player ) ext
 
   // ----------------------------------------------------------------------- //
 
-  def onInit(level: Level, player: Player): Unit = {
+  def onClientInit(level: Level, player: Player): Unit = {
+
     // This delayed initialization on the client side is required to allow
     // the server to set up the tablet wrapper first (since packets generated
     // in the component setup would otherwise be queued before the events that
@@ -173,10 +198,9 @@ abstract class ItemMachineWrapper(var stack: ItemStack, var player: Player ) ext
     }
   }
 
-  def onDataUpdate(level: Level, player: Player): Unit = {}
-
   def update(level: Level, player: Player): Unit = {
     this.player = player
+    if(! isInitialized) return
 
     if (!level.isClientSide) {
       if (isCreative && level.getGameTime % Settings.get.tickFrequency == 0) {
@@ -184,7 +208,10 @@ abstract class ItemMachineWrapper(var stack: ItemStack, var player: Player ) ext
       }
       machine.update()
       updateComponents()
-      onDataUpdate(level, player)
+
+      data.isRunning = machine.isRunning
+      data.energy = internalConnector.globalBuffer()
+      data.maxEnergy = internalConnector.globalBufferSize()
 
       if (lastRunning != machine.isRunning) {
         lastRunning = machine.isRunning

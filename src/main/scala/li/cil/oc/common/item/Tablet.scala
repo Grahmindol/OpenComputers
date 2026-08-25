@@ -189,37 +189,11 @@ class TabletWrapper(stack: ItemStack, player: Player) extends ItemMachineWrapper
 
   // ----------------------------------------------------------------------- //
 
-  def isCreative: Boolean = data.tier == Tier.Five
-
-  override def items: Array[ItemStack] = data.items
+  override def isCreative: Boolean = data.tier == Tier.Five
 
   override def host: TabletWrapper = this
 
   // ----------------------------------------------------------------------- //
-
-  def containerSlotType: String =
-    if (data.container.isEmpty) {
-      Slot.None
-    } else {
-      Option(Driver.driverFor(data.container, getClass)) match {
-        case Some(driver: Container) =>
-          driver.providedSlot(data.container)
-        case _ =>
-          Slot.None
-      }
-    }
-
-  def containerSlotTier: Int =
-    if (data.container.isEmpty) {
-      Tier.None
-    } else {
-      Option(Driver.driverFor(data.container, getClass)) match {
-        case Some(driver: Container) =>
-          driver.providedTier(data.container)
-        case _ =>
-          Tier.None
-      }
-    }
 
   override def canPlaceItem(slot: Int, stack: ItemStack): Boolean =
     slot == getContainerSize - 1 &&
@@ -250,9 +224,8 @@ class TabletWrapper(stack: ItemStack, player: Player) extends ItemMachineWrapper
 
   // ----------------------------------------------------------------------- //
 
-  override def onInit(level: Level,player: Player): Unit = {
-    super.onInit(level, player)
-    OpenComputers.log.info(s"TabletWrapper initialization")
+  override def onClientInit(level: Level, player: Player): Unit = {
+    super.onClientInit(level, player)
     componentSlots collect {
       case Some(buffer: api.internal.TextBuffer) =>
         buffer.setMaximumColorDepth(colorDepth)
@@ -260,8 +233,6 @@ class TabletWrapper(stack: ItemStack, player: Player) extends ItemMachineWrapper
     }
   }
 
-  override def onDataUpdate(level: Level,player: Player): Unit = {
-  }
 }
 
 object Tablet {

@@ -1,21 +1,16 @@
 package li.cil.oc.common.container
 
-import li.cil.oc.OpenComputers
-import li.cil.oc.api
-import li.cil.oc.api.{Driver, ImmutableItemStack, network}
+import li.cil.oc.{OpenComputers, api}
 import li.cil.oc.api.driver.{DriverItem => ItemDriver}
-import li.cil.oc.api.network.EnvironmentHost
-import li.cil.oc.api.network.{Component, ManagedEnvironment, Node, Visibility}
+import li.cil.oc.api.network._
 import li.cil.oc.api.util.Lifecycle
+import li.cil.oc.api.{Driver, ImmutableItemStack, network}
 import li.cil.oc.common.datacomponents.OCComponents
-import li.cil.oc.integration.opencomputers.{DriverTablet, Item}
-import net.minecraft.core.HolderLookup
+import li.cil.oc.integration.opencomputers.DriverTablet
 import net.minecraft.core.component.DataComponentType
 import net.minecraft.world.item.ItemStack
-import net.minecraft.nbt.CompoundTag
 import net.neoforged.neoforge.common.MutableDataComponentHolder
 
-import scala.collection.convert.ImplicitConversionsToScala._
 import scala.collection.mutable
 
 trait ComponentInventory extends Inventory with network.Environment {

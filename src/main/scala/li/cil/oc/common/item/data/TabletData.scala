@@ -7,7 +7,7 @@ import net.minecraft.core.component.DataComponentHolder
 import net.minecraft.world.item.ItemStack
 import net.neoforged.neoforge.common.MutableDataComponentHolder
 
-class TabletData extends ItemStateData {
+class TabletData extends ItemMachineData {
   def this(stack: ItemStack) = {
     this()
     loadData(stack)

@@ -116,13 +116,15 @@ object ItemMachineManager {
         if (holder.level.isClientSide) {
           Client.getWeak(stack) match {
             case Some(weak) =>
-              val timesChanged = holder.getInventory.getTimesChanged
-              if (timesChanged != weak.timesChanged) {
-                if (!weak.isDirty) {
-                  weak.isDirty = true
-                  PacketSender.sendMachineItemStateRequest(stack, holder.level.registryAccess())
+              if(weak.isInitialized) {
+                val timesChanged = holder.getInventory.getTimesChanged
+                if (timesChanged != weak.timesChanged) {
+                  if (!weak.isDirty) {
+                    weak.isDirty = true
+                    PacketSender.sendMachineItemStateRequest(stack, holder.level.registryAccess())
+                  }
+                  weak.timesChanged = timesChanged
                 }
-                weak.timesChanged = timesChanged
               }
             case _ =>
           }

@@ -1,9 +1,11 @@
 package li.cil.oc.common.armor
 
 import li.cil.oc._
-import li.cil.oc.api.Driver
+import li.cil.oc.api.{Driver, Network}
 import li.cil.oc.api.driver.item.Container
+import li.cil.oc.api.network.{EnvironmentHost, Message, Node, Visibility}
 import li.cil.oc.common.armor.{Armor => ArmorComponent}
+import li.cil.oc.common.container.ComponentInventory
 import li.cil.oc.common.{ItemMachineWrapper, Slot, Tier}
 import li.cil.oc.integration.opencomputers.DriverScreen
 import net.minecraft.world.entity.EquipmentSlot
@@ -35,26 +37,9 @@ class ArmorWrapper(player: Player) extends ItemMachineWrapper(player.getItemBySl
 
   override def isCreative: Boolean = true
 
-  def items: Array[ItemStack] = data.items
-
   override def host: ArmorWrapper = this
 
   // ----------------------------------------------------------------------- //
-
-  def containerSlotType: String =
-    if (data.container.isEmpty) Slot.None
-    else Option(Driver.driverFor(data.container, getClass)) match {
-      case Some(driver: Container) => driver.providedSlot(data.container)
-      case _ => Slot.None
-    }
-
-  def containerSlotTier: Int =
-    if (data.container.isEmpty) Tier.None
-    else Option(Driver.driverFor(data.container, getClass)) match {
-      case Some(driver: Container) => driver.providedTier(data.container)
-      case _ => Tier.None
-    }
-
 
   override def canPlaceItem(slot: Int, stack: ItemStack): Boolean =
     slot == getContainerSize - 1 &&
@@ -72,9 +57,8 @@ class ArmorWrapper(player: Player) extends ItemMachineWrapper(player.getItemBySl
 
   // ----------------------------------------------------------------------- //
 
-  override def onInit(level: Level,player: Player): Unit = {
-    super.onInit(level, player)
-    OpenComputers.log.info(s"ArmorWrapper initialization")
+  override def onClientInit(level: Level, player: Player): Unit = {
+    super.onClientInit(level, player)
     componentSlots collect {
       case Some(buffer: api.internal.TextBuffer) =>
         buffer.setMaximumColorDepth(api.internal.TextBuffer.ColorDepth.FourBit)
@@ -82,10 +66,39 @@ class ArmorWrapper(player: Player) extends ItemMachineWrapper(player.getItemBySl
     }
   }
 
-  override def onDataUpdate(level: Level,player: Player): Unit = {
-    data.isRunning = machine.isRunning
-    data.energy = internalComponent.node.globalBuffer()
-    data.maxEnergy = internalComponent.node.globalBufferSize()
+}
+
+class ArmorPieceWrapper(var stack: ItemStack, host: ArmorWrapper ) extends ComponentInventory {
+  val data = new ArmorData()
+
+  override def host: EnvironmentHost = host
+
+  override def setChanged(): Unit = {
+    saveData(stack)
+    host.setChanged()
   }
 
+  // TODO : fix it
+  override def stillValid(player: Player): Boolean = true
+
+  override def node(): Node = Network.newNode(this, Visibility.Network).withConnector(Settings.get.bufferTablet).create()
+
+
+  override def onConnect(node: Node): Unit = {
+    if (node == this.node) {
+      connectComponents()
+    }
+  }
+
+  override def onDisconnect(node: Node): Unit = {
+    if (node == this.node) {
+      disconnectComponents()
+    }
+  }
+
+  override def onMessage(message: Message): Unit = {}
+
+  override def items: Array[ItemStack] = data.items
+
+  override def getContainerSize: Int = items.length
 }

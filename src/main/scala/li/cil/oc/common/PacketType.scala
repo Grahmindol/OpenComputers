@@ -93,6 +93,8 @@ object PacketType extends Enumeration {
   Clipboard,
   MachineItemStateRequest,
   MachineItemStateResponse,
+  MachineItemInteractionRequest,
+  MachineItemInteractionResponse,
   MouseClickOrDrag,
   MouseScroll,
   MouseUp,
@@ -104,8 +106,6 @@ object PacketType extends Enumeration {
   ServerPower,
   HoloScreenResize,
   RackKVMSelection,
-  MachineItemInteractionRequest,
-  MachineItemInteractionResponse,
 
   LootDisksReset,
   LootEEPROMsReset,

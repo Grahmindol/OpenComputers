@@ -7,7 +7,7 @@ import net.minecraft.core.component.DataComponentHolder
 import net.minecraft.world.item.ItemStack
 import net.neoforged.neoforge.common.MutableDataComponentHolder
 
-abstract class ItemStateData extends Persistable {
+abstract class ItemMachineData extends Persistable {
   def this(stack: ItemStack) = {
     this()
     loadData(stack)

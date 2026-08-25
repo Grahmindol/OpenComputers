@@ -251,7 +251,7 @@ object PacketHandler extends CommonPacketHandler {
     val wrapper = ItemMachineManager.Client.get(stack, p.player)
     wrapper.data.isRunning = running
     wrapper.isDirty = false
-    wrapper.onInit(p.player.level(), p.player)
+    wrapper.onClientInit(p.player.level(), p.player)
   }
 
   def onMachineItemInteractionResponse(p: PacketParser) : Unit = {

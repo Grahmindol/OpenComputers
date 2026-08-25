@@ -9,6 +9,7 @@ import li.cil.oc.api.network.EnvironmentHost;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -16,6 +17,7 @@ import net.neoforged.neoforge.items.IItemHandler;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 public interface DriverAPI {
     /**
@@ -180,4 +182,9 @@ public interface DriverAPI {
      * @return the list of all registered item drivers.
      */
     Collection<DriverItem> itemDrivers();
+
+    /**
+     *
+     */
+    //void registerItemMachine(Item item, BiFunction<ItemStack, Player, ItemMachineWrapper> factory);
 }

@@ -11,8 +11,9 @@ import li.cil.oc.api.driver.InventoryProvider
 import li.cil.oc.api.driver.item.HostAware
 import li.cil.oc.api.machine.Value
 import li.cil.oc.api.network.EnvironmentHost
+import li.cil.oc.common.{ItemMachineManager, ItemMachineWrapper}
 import li.cil.oc.util.InventoryUtils
-import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.{Item, ItemStack}
 import net.minecraft.core.Direction
 import net.minecraft.core.BlockPos
 import net.neoforged.neoforge.items.IItemHandler
@@ -24,6 +25,8 @@ import scala.math.ScalaNumber
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.level.Level
 import net.neoforged.neoforge.capabilities.Capabilities
+
+import java.util.function.BiFunction
 
 /**
  * This class keeps track of registered drivers and provides installation logic
@@ -143,6 +146,11 @@ private[oc] object Registry extends api.detail.DriverAPI {
     }
   }
 
+
+  /*override def registerItemMachine(item: Item, factory: BiFunction[ItemStack, Player, ItemMachineWrapper]): Unit = {
+    ItemMachineManager.register(item, (s,p) => factory.apply(s,p))
+  }*/
+
   def convert(value: Array[AnyRef]): Array[AnyRef] = if (value != null) value.map(arg => convertRecursively(arg, new util.IdentityHashMap())) else null
 
   def convertRecursively(value: Any, memo: util.IdentityHashMap[Any, AnyRef], force: Boolean = false): AnyRef = {
@@ -246,4 +254,5 @@ private[oc] object Registry extends api.detail.DriverAPI {
     }
     memo.get(obj)
   }
+
 }
