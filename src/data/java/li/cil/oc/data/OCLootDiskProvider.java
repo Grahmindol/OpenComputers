@@ -30,6 +30,7 @@ public class OCLootDiskProvider extends JsonCodecProvider<LootDisk> {
         add("openloader", new LootDisk("OpenLoader (Boot Loader)", DyeColor.MAGENTA, 1, true));
         add("openos", new LootDisk("OpenOS (Operating System)", DyeColor.GREEN, 0, true));
         add("oppm", new LootDisk("OPPM (Package Manager)", DyeColor.CYAN, 0, true));
+        add("tape", new LootDisk("Tape (Tape Drive Utilities)", DyeColor.GRAY, 1, true));
     }
 
     private void add(String id, LootDisk disk) {
